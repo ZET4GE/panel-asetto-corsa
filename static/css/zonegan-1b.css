@@ -13,10 +13,13 @@
 .navbar.zg-nav{
   background-color: var(--zg-accent) !important;
   border-bottom: none !important;
-  position: relative;
   overflow: hidden;
   padding: 0;
   min-height: 64px;
+}
+/* al abrir un dropdown, no lo recortes (el overflow:hidden de arriba es solo para la cuña decorativa) */
+.navbar.zg-nav:has(.dropdown-menu.show){
+  overflow: visible;
 }
 /* trama a cuadros sutil sobre el rojo */
 .navbar.zg-nav::before{
@@ -499,6 +502,10 @@ a.card.zg-plate.zg-plate-primary .zg-plate-sub{ color: #5b6274; }
 
 
 /* ========== RESPONSIVE ========== */
+
+/* el CSS del panel original fija min-width:992px !important en body,
+   lo que impide que este tema responda en tablet/móvil */
+body{ min-width: 0 !important; }
 
 @media (max-width: 991.98px){
   .navbar.zg-nav::after{ display:none; }
