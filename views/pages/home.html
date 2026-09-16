@@ -5,6 +5,11 @@
 {{ define "content" }}
     {{ template "premium" dict "IsPremium" $.IsPremium }}
 
+    <div class="zg-hero">
+        <div class="zg-hero-eyebrow"><span class="zg-brand-flag" aria-hidden="true"></span>Zonegan Racing</div>
+        <h1 class="zg-hero-title">{{ $.ServerName }}</h1>
+    </div>
+
     {{ with .RaceDetails }}
         <div class="card mb-4">
             {{ if $.ServerEvent.IsChampionship }}
@@ -71,12 +76,12 @@
         </div>
     {{ end }}
 
-    <h2>Carreras</h2>
+    <h2 class="zg-section-title">Carreras</h2>
 
     <div class="row">
         {{ if WriteAccess }}
             <div class="col-md-6 col-lg-4 mt-4">
-                <a class="card" href="/quick">
+                <a class="card zg-action-card" href="/quick">
                     <div class="card-body">
                         <div class="row">
                             <div class="col-5">
@@ -93,7 +98,7 @@
         {{ end }}
 
         <div class="col-md-6 col-lg-4 mt-4">
-            <a class="card" href="/custom">
+            <a class="card zg-action-card" href="/custom">
                 <div class="card-body">
                     <div class="row">
                         <div class="col-5">
@@ -109,7 +114,7 @@
         </div>
 
         <div class="col-md-6 col-lg-4 mt-4">
-            <a class="card" href="/championships">
+            <a class="card zg-action-card" href="/championships">
                 <div class="card-body">
                     <div class="row">
 
@@ -127,7 +132,7 @@
         </div>
 
         <div class="col-md-6 col-lg-4 mt-4">
-            <a class="card" href="/race-weekends">
+            <a class="card zg-action-card" href="/race-weekends">
                 <div class="card-body">
                     <div class="row">
                         <div class="col-5">
@@ -143,7 +148,7 @@
         </div>
 
         <div class="col-md-6 col-lg-4 mt-4">
-            <a class="card" href="/results">
+            <a class="card zg-action-card" href="/results">
                 <div class="card-body">
                     <div class="row">
                         <div class="col-5">
@@ -160,7 +165,7 @@
 
 
         <div class="col-md-6 col-lg-4 mt-4">
-            <a class="card" href="/calendar">
+            <a class="card zg-action-card" href="/calendar">
                 <div class="card-body">
                     <div class="row">
                         <div class="col-5">
@@ -177,12 +182,12 @@
 
     </div>
 
-    <h2 class="mt-4">Contenido</h2>
+    <h2 class="mt-4 zg-section-title">Contenido</h2>
 
     <div class="row">
 
         <div class="col-md-6 col-lg-4 mt-4">
-            <a class="card" href="/tracks">
+            <a class="card zg-action-card" href="/tracks">
                 <div class="card-body">
                     <div class="row">
                         <div class="col-5">
@@ -198,7 +203,7 @@
         </div>
 
         <div class="col-md-6 col-lg-4 mt-4">
-            <a class="card" href="/cars">
+            <a class="card zg-action-card" href="/cars">
                 <div class="card-body">
                     <div class="row">
                         <div class="col-5">
@@ -215,7 +220,7 @@
         </div>
 
         <div class="col-md-6 col-lg-4 mt-4">
-            <a class="card" href="/weather">
+            <a class="card zg-action-card" href="/weather">
                 <div class="card-body">
                     <div class="row">
                         <div class="col-5">
@@ -233,13 +238,13 @@
 
     {{ if WriteAccess }}
 
-        <h2 class="mt-4">Administración del Servidor</h2>
+        <h2 class="mt-4 zg-section-title">Administración del Servidor</h2>
 
         <div class="row">
 
             {{ if AdminAccess }}
                 <div class="col-md-6 col-lg-4 mt-4">
-                    <a class="card" href="/server-options">
+                    <a class="card zg-action-card" href="/server-options">
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-5">
@@ -258,7 +263,7 @@
 
             {{ if WriteAccess }}
                 <div class="col-md-6 col-lg-4 mt-4">
-                    <a class="card" href="/logs">
+                    <a class="card zg-action-card" href="/logs">
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-5">
@@ -277,7 +282,7 @@
 
             {{ if AdminAccess }}
                 <div class="col-md-6 col-lg-4 mt-4">
-                    <a class="card" href="/accounts">
+                    <a class="card zg-action-card" href="/accounts">
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-5">
@@ -293,7 +298,7 @@
                 </div>
 
                 <div class="col-md-6 col-lg-4 mt-4">
-                    <a class="card" href="/blacklist">
+                    <a class="card zg-action-card" href="/blacklist">
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-5">
@@ -309,7 +314,7 @@
                 </div>
 
                 <div class="col-md-6 col-lg-4 mt-4">
-                    <a class="card" href="/motd">
+                    <a class="card zg-action-card" href="/motd">
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-5">
@@ -325,7 +330,7 @@
                 </div>
 
                 <div class="col-md-6 col-lg-4 mt-4">
-                    <a class="card" href="/audit-logs">
+                    <a class="card zg-action-card" href="/audit-logs">
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-5">
@@ -341,7 +346,7 @@
                 </div>
 
                 <div class="col-md-6 col-lg-4 mt-4">
-                    <a class="card" href="/stracker/options">
+                    <a class="card zg-action-card" href="/stracker/options">
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-5">
@@ -357,7 +362,7 @@
                 </div>
 
                 <div class="col-md-6 col-lg-4 mt-4">
-                    <a class="card" href="/kissmyrank/options">
+                    <a class="card zg-action-card" href="/kissmyrank/options">
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-5">
@@ -373,7 +378,7 @@
                 </div>
 
                 <div class="col-md-6 col-lg-4 mt-4">
-                    <a class="card" href="/realpenalty/options">
+                    <a class="card zg-action-card" href="/realpenalty/options">
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-5">
@@ -389,7 +394,7 @@
                 </div>
 
                 <div class="col-md-6 col-lg-4 mt-4">
-                    <a class="card" href="/current-config">
+                    <a class="card zg-action-card" href="/current-config">
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-5">
@@ -407,7 +412,7 @@
 
             {{ if DeleteAccess }}
                 <div class="col-md-6 col-lg-4 mt-4">
-                    <a class="card" href="/autofill-entrants">
+                    <a class="card zg-action-card" href="/autofill-entrants">
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-5">

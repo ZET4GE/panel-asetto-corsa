@@ -1,6 +1,13 @@
-/* Zonegan Racing theme - shared rules (color-agnostic, uses CSS variables) */
+/* ============================================================
+   ZONEGAN RACING — shared theme rules (color-agnostic, uses CSS variables)
+   Sections: BASE / NAVIGATION / HERO / RACING CARDS / EVENT CARDS /
+   DRIVER CARDS / TIMING / CHAMPIONSHIP / FORMS / TABLES / BADGES /
+   RESPONSIVE / ACCESSIBILITY
+   ============================================================ */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Rajdhani:wght@500;600;700&display=swap');
+
+/* ========== BASE ========== */
 
 :root{
   --zg-radius-sm: 4px;
@@ -10,8 +17,6 @@
   --zg-transition: 150ms ease;
 }
 
-*{ transition: background-color var(--zg-transition), border-color var(--zg-transition), color var(--zg-transition), box-shadow var(--zg-transition), transform var(--zg-transition), opacity var(--zg-transition); }
-
 body{
   background-color: var(--zg-bg) !important;
   color: var(--zg-text) !important;
@@ -20,7 +25,7 @@ body{
 }
 
 /* Rajdhani reserved for display/racing use: main titles, nav brand, numeric badges */
-h1,.navbar-brand,.display-number{
+h1,.navbar-brand,.display-number,.zg-num{
   font-family: 'Rajdhani', 'Inter', sans-serif !important;
 }
 h2,h3,h4,h5,h6,.card-header,.nav-link,.btn,.badge,label,th{
@@ -60,10 +65,17 @@ body::before{
   z-index:1050;
 }
 
-a{ color: var(--zg-accent) !important; }
+a{ color: var(--zg-accent) !important; transition: color var(--zg-transition); }
 a:hover{ color: var(--zg-accent-hover) !important; }
 
-/* navbar */
+/* scrollbar (webkit) for that sim-racing HUD feel */
+::-webkit-scrollbar{ width: 10px; height:10px; }
+::-webkit-scrollbar-track{ background: var(--zg-bg); }
+::-webkit-scrollbar-thumb{ background: var(--zg-accent); border-radius: var(--zg-radius); }
+
+
+/* ========== NAVIGATION ========== */
+
 .navbar{
   background-color: var(--zg-surface-2) !important;
   border-bottom: 1px solid var(--zg-border) !important;
@@ -78,6 +90,24 @@ a:hover{ color: var(--zg-accent-hover) !important; }
   text-transform: uppercase;
   letter-spacing: 0.04em;
   font-size: 1.2rem;
+  display: inline-flex;
+  align-items: center;
+}
+.zg-brand-flag{
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  margin-right: .5rem;
+  border-radius: 3px;
+  background-image:
+    linear-gradient(45deg, var(--zg-accent) 25%, transparent 25%),
+    linear-gradient(-45deg, var(--zg-accent) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, var(--zg-accent) 75%),
+    linear-gradient(-45deg, transparent 75%, var(--zg-accent) 75%);
+  background-size: 7px 7px;
+  background-position: 0 0, 0 3.5px, 3.5px -3.5px, -3.5px 0;
+  background-color: var(--zg-text);
+  flex-shrink: 0;
 }
 .navbar .nav-link{
   color: var(--zg-text-dim, var(--zg-text)) !important;
@@ -88,6 +118,7 @@ a:hover{ color: var(--zg-accent-hover) !important; }
   padding-top: .6rem;
   padding-bottom: .6rem;
   border-bottom: 2px solid transparent;
+  transition: color var(--zg-transition), border-color var(--zg-transition);
 }
 .navbar .nav-link.active, .navbar .nav-link:hover, .navbar .nav-link:focus{
   color: var(--zg-text) !important;
@@ -104,6 +135,7 @@ a:hover{ color: var(--zg-accent-hover) !important; }
   color: var(--zg-text) !important;
   border-radius: var(--zg-radius-sm);
   font-size: .85rem;
+  transition: background-color var(--zg-transition), color var(--zg-transition);
 }
 .dropdown-item:hover, .dropdown-item:focus{
   background-color: var(--zg-row-hover) !important;
@@ -125,12 +157,81 @@ a:hover{ color: var(--zg-accent-hover) !important; }
 }
 .list-group-item a{ color: inherit !important; }
 
-/* cards */
+
+/* ========== HERO ========== */
+/* used on home.html above the fold, and reusable for other page headers */
+
+.zg-hero{
+  position: relative;
+  border-radius: var(--zg-radius-lg);
+  border: 1px solid var(--zg-border);
+  background:
+    linear-gradient(120deg, var(--zg-surface-2) 0%, var(--zg-surface) 65%);
+  overflow: hidden;
+  padding: 1.5rem 1.75rem;
+  margin-bottom: 1.5rem;
+}
+.zg-hero::after{
+  content:"";
+  position:absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(90deg, var(--zg-accent) 50%, transparent 50%),
+    linear-gradient(90deg, transparent 50%, var(--zg-accent) 50%);
+  background-size: 24px 3px;
+  background-position: 0 0, 12px 0;
+  background-repeat: repeat-x;
+  height: 3px;
+  top: auto;
+  bottom: 0;
+  opacity: .8;
+}
+.zg-hero-eyebrow{
+  display:inline-flex;
+  align-items:center;
+  gap:.4em;
+  font-family: 'Inter','Segoe UI',sans-serif;
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--zg-text-dim, var(--zg-text));
+  margin-bottom: .35rem;
+}
+.zg-hero-title{
+  font-family: 'Rajdhani','Inter',sans-serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .02em;
+  font-size: 1.5rem;
+  margin: 0 0 .25rem 0;
+  color: var(--zg-text);
+}
+.zg-section-title{
+  display:flex;
+  align-items:center;
+  gap:.6rem;
+  margin-top: 2rem;
+  margin-bottom: .25rem;
+}
+.zg-section-title::before{
+  content:"";
+  width: 4px;
+  height: 1.1em;
+  background: var(--zg-accent);
+  border-radius: 2px;
+  display:inline-block;
+}
+
+
+/* ========== RACING CARDS ========== */
+
 .card{
   background-color: var(--zg-surface) !important;
   border: 1px solid var(--zg-border) !important;
   border-radius: var(--zg-radius-lg) !important;
   box-shadow: var(--zg-shadow-sm);
+  transition: transform var(--zg-transition), box-shadow var(--zg-transition), border-color var(--zg-transition);
 }
 .card-header{
   background-color: transparent !important;
@@ -150,95 +251,63 @@ a:hover{ color: var(--zg-accent-hover) !important; }
   transform: translateY(-2px);
 }
 
-/* buttons */
-.btn{
-  border-radius: var(--zg-radius-sm) !important;
-  font-weight: 600;
-  letter-spacing: .02em;
-  font-size: .85rem;
-  border: 1px solid transparent;
+/* home.html quick-link action cards (plain <a class="card">) */
+a.card.zg-action-card, a.card{
+  transition: transform var(--zg-transition), box-shadow var(--zg-transition), border-color var(--zg-transition);
 }
-.btn:hover{ transform: translateY(-1px); }
-.btn:active{ transform: translateY(0); }
-
-.btn-primary{
-  background-color: var(--zg-accent) !important;
+a.card:hover{
   border-color: var(--zg-accent) !important;
-  color: #fff !important;
+  box-shadow: var(--zg-shadow);
+  transform: translateY(-3px);
 }
-.btn-primary:hover{
-  background-color: var(--zg-accent-hover) !important;
-  border-color: var(--zg-accent-hover) !important;
-  box-shadow: 0 4px 14px var(--zg-accent-glow);
-}
-.btn-success{
-  background-color: var(--zg-accent-2) !important;
-  border-color: var(--zg-accent-2) !important;
-  color: #04150c !important;
-}
-.btn-success:hover{
-  background-color: var(--zg-accent-2-hover) !important;
-  border-color: var(--zg-accent-2-hover) !important;
-  box-shadow: 0 4px 14px var(--zg-accent-2-glow);
-}
-.btn-outline-primary{
-  color: var(--zg-accent) !important;
-  border-color: var(--zg-accent) !important;
-}
-.btn-outline-primary:hover{
-  background-color: var(--zg-accent) !important;
-  color: #fff !important;
-}
-.btn-warning, .btn-info, .btn-danger, .btn-secondary{
-  border: none;
-}
-.btn-warning:hover, .btn-info:hover, .btn-danger:hover, .btn-secondary:hover{
-  filter: brightness(1.08);
-  box-shadow: var(--zg-shadow-sm);
-}
-.btn-sm{ letter-spacing: .01em; }
-
-/* badges */
-.badge{
-  border-radius: 999px;
-  font-weight: 600;
-  font-size: .68rem;
-  letter-spacing: .03em;
-  text-transform: uppercase;
-  padding: .35em .6em;
-}
-.badge-primary{ background-color: var(--zg-accent) !important; }
-.badge-success{ background-color: var(--zg-accent-2) !important; color: #04150c !important; }
-.badge-secondary{ background-color: var(--zg-surface-3, var(--zg-surface-2)) !important; color: var(--zg-text) !important; }
-.badge-dlc, .badge.bg-dlc, span.bg-dlc{ background-color: #8a5cf6 !important; color: #fff !important; }
-.badge-mod, .badge.bg-mod, span.bg-mod{ background-color: #3aa0ff !important; color: #fff !important; }
-.badge.bg-default-content{ background-color: var(--zg-surface-3, var(--zg-surface-2)) !important; color: var(--zg-text) !important; }
-
-/* tables */
-.table{ color: var(--zg-text) !important; margin-bottom: 0; }
-.table thead th{
-  background-color: var(--zg-surface-2) !important;
-  border-bottom: 2px solid var(--zg-accent) !important;
-  text-transform: uppercase;
-  font-size: .72rem;
-  font-weight: 700;
-  letter-spacing: .05em;
+.zg-action-card i{
   color: var(--zg-text-dim, var(--zg-text));
-  padding: .6rem .75rem;
+  transition: color var(--zg-transition);
 }
-.table td{ padding: .6rem .75rem; vertical-align: middle; }
-.table td, .table th{ border-color: var(--zg-border) !important; }
-.table-bordered{ border-color: var(--zg-border) !important; }
-.table-striped tbody tr:nth-of-type(odd){ background-color: rgba(255,255,255,0.015); }
-.table-hover tbody tr:hover, tr.row-link:hover{
-  background-color: var(--zg-row-hover) !important;
-  cursor: pointer;
-}
-.table td.font-weight-bold, td[class*="time"], td[class*="lap"]{
-  font-variant-numeric: tabular-nums;
-}
+.zg-action-card:hover i{ color: var(--zg-accent) !important; }
+.zg-action-card h3{ margin-bottom: 0; }
 
-/* live timing table */
+
+/* ========== EVENT CARDS ========== */
+/* championship event / race-weekend event cards */
+
+.championship-event{
+  border-left: 3px solid var(--zg-border) !important;
+}
+.championship-event.event-complete{
+  border-left-color: var(--zg-accent-2) !important;
+}
+.image-track{
+  border-radius: var(--zg-radius);
+  border: 1px solid var(--zg-border);
+  max-height: 160px;
+  object-fit: cover;
+}
+.championship-button-row .btn{ margin: .15rem .25rem .15rem 0; }
+
+
+/* ========== DRIVER CARDS ========== */
+/* race-builder entrant cards, entry preview */
+
+.entrant .card, .card.border-warning{
+  border-color: var(--zg-border) !important;
+  border-left: 3px solid var(--zg-accent) !important;
+}
+.entryListCarPreview{
+  border-radius: var(--zg-radius);
+  border: 1px solid var(--zg-border);
+  background: var(--zg-surface-2);
+  object-fit: cover;
+}
+.driver-link{ cursor: pointer; }
+.driver-link:hover{ color: var(--zg-accent) !important; }
+
+
+/* ========== TIMING ========== */
+
+.race-info{ font-size: .88rem; }
+.race-info strong{ font-family:'Rajdhani','Inter',sans-serif; font-size: 1.05rem; letter-spacing:.01em; }
+
 #live-table, #live-table-disconnected{
   font-size: .85rem;
 }
@@ -246,12 +315,37 @@ a:hover{ color: var(--zg-accent-hover) !important; }
 #live-table td{ text-align: center; }
 #live-table td:nth-child(2){ text-align: left; font-weight: 600; }
 
-/* forms */
+.badge-best{
+  background-color: var(--zg-accent-2) !important;
+  color: #04150c !important;
+}
+
+
+/* ========== CHAMPIONSHIP ========== */
+/* standings tables — background/bold weight on these <tr>/<td> is computed
+   dynamically in Go (classColor, current-driver highlight) and stays inline;
+   this section only styles the surrounding chrome */
+
+.entrant-table-max-height{
+  max-height: 70vh;
+  overflow-y: auto;
+}
+.entrant-table-max-height table{ margin-bottom: 0; }
+.entrant-table-max-height th{
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+
+/* ========== FORMS ========== */
+
 .form-control, .custom-select{
   background-color: var(--zg-surface-2) !important;
   color: var(--zg-text) !important;
   border: 1px solid var(--zg-border) !important;
   border-radius: var(--zg-radius-sm) !important;
+  transition: border-color var(--zg-transition), box-shadow var(--zg-transition);
 }
 .form-control:focus{
   border-color: var(--zg-accent) !important;
@@ -331,6 +425,7 @@ li.ms-elem-selectable, li.ms-elem-selection{
   color: var(--zg-text) !important;
   font-size: .82rem !important;
   border-left: 3px solid transparent;
+  transition: background-color var(--zg-transition), color var(--zg-transition);
 }
 .ms-container li.ms-elem-selectable.bg-dlc, li.ms-elem-selectable.bg-dlc{ border-left-color: #8a5cf6; }
 .ms-container li.ms-elem-selectable.bg-mod, li.ms-elem-selectable.bg-mod{ border-left-color: #3aa0ff; }
@@ -363,6 +458,55 @@ li.ms-elem-selectable, li.ms-elem-selection{
   border-radius: var(--zg-radius) !important;
   overflow: hidden;
   border: 1px solid var(--zg-border);
+}
+
+
+/* ========== TABLES ========== */
+
+.table{ color: var(--zg-text) !important; margin-bottom: 0; }
+.table thead th{
+  background-color: var(--zg-surface-2) !important;
+  border-bottom: 2px solid var(--zg-accent) !important;
+  text-transform: uppercase;
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .05em;
+  color: var(--zg-text-dim, var(--zg-text));
+  padding: .6rem .75rem;
+}
+.table td{ padding: .6rem .75rem; vertical-align: middle; }
+.table td, .table th{ border-color: var(--zg-border) !important; }
+.table-bordered{ border-color: var(--zg-border) !important; }
+.table-striped tbody tr:nth-of-type(odd){ background-color: rgba(255,255,255,0.015); }
+.table-hover tbody tr:hover, tr.row-link:hover{
+  background-color: var(--zg-row-hover) !important;
+  cursor: pointer;
+}
+.table tbody tr{ transition: background-color var(--zg-transition); }
+.table td.font-weight-bold, td[class*="time"], td[class*="lap"]{
+  font-variant-numeric: tabular-nums;
+}
+
+/* pagination */
+.pagination .page-link{
+  background-color: var(--zg-surface) !important;
+  border-color: var(--zg-border) !important;
+  color: var(--zg-text) !important;
+  transition: background-color var(--zg-transition), color var(--zg-transition);
+}
+.pagination .page-link:hover{
+  background-color: var(--zg-row-hover) !important;
+  color: var(--zg-accent) !important;
+}
+.pagination .page-item.disabled .page-link{
+  background-color: var(--zg-surface-2) !important;
+  color: var(--zg-text-dim, #888) !important;
+  border-color: var(--zg-border) !important;
+}
+.pagination .page-item.pagination-current-page .page-link{
+  background-color: var(--zg-accent) !important;
+  border-color: var(--zg-accent) !important;
+  color: #fff !important;
 }
 
 /* footer */
@@ -402,6 +546,7 @@ footer, .footer{
   font-size: .82rem;
   text-transform: uppercase;
   letter-spacing: .02em;
+  transition: color var(--zg-transition), border-color var(--zg-transition);
 }
 .nav-tabs .nav-link.active{
   background-color: transparent !important;
@@ -410,7 +555,40 @@ footer, .footer{
 }
 .nav-tabs .nav-link.text-success{ color: var(--zg-accent-2) !important; }
 
-/* scrollbar (webkit) for that sim-racing HUD feel */
-::-webkit-scrollbar{ width: 10px; height:10px; }
-::-webkit-scrollbar-track{ background: var(--zg-bg); }
-::-webkit-scrollbar-thumb{ background: var(--zg-accent); border-radius: var(--zg-radius); }
+
+/* ========== BADGES ========== */
+
+.badge{
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: .68rem;
+  letter-spacing: .03em;
+  text-transform: uppercase;
+  padding: .35em .6em;
+  transition: background-color var(--zg-transition);
+}
+.badge-primary{ background-color: var(--zg-accent) !important; }
+.badge-success{ background-color: var(--zg-accent-2) !important; color: #04150c !important; }
+.badge-secondary{ background-color: var(--zg-surface-3, var(--zg-surface-2)) !important; color: var(--zg-text) !important; }
+.badge-dlc, .badge.bg-dlc, span.bg-dlc{ background-color: #8a5cf6 !important; color: #fff !important; }
+.badge-mod, .badge.bg-mod, span.bg-mod{ background-color: #3aa0ff !important; color: #fff !important; }
+.badge.bg-default-content{ background-color: var(--zg-surface-3, var(--zg-surface-2)) !important; color: var(--zg-text) !important; }
+
+
+/* ========== RESPONSIVE ========== */
+
+@media (max-width: 767.98px){
+  .zg-hero{ padding: 1.1rem 1.25rem; }
+  .zg-hero-title{ font-size: 1.2rem; }
+  h1{ font-size: 1.4rem; }
+  .championship-button-row .btn{ width: 100%; margin: .2rem 0; }
+  #live-table, #live-table-disconnected{ font-size: .78rem; }
+}
+
+
+/* ========== ACCESSIBILITY ========== */
+
+@media (prefers-reduced-motion: reduce){
+  *{ transition: none !important; animation: none !important; }
+  a.card:hover, .card-car:hover{ transform: none !important; }
+}
