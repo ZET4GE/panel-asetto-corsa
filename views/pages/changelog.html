@@ -3,7 +3,18 @@
 {{ define "title" }}Registro de Cambios{{ end }}
 
 {{ define "content" }}
-    <h1 class="text-center">Registro de Cambios</h1>
+    <div class="zg-page-head">
+        <div class="d-flex align-items-end justify-content-between flex-wrap">
+            <div>
+                <div class="zg-page-eyebrow">Server Manager</div>
+                <h1 class="zg-page-title">Cambios</h1>
+            </div>
+        </div>
 
-    {{ $.Changelog }}
+        <div class="zg-page-rule"></div>
+    </div>
+
+    <div id="changelog-text">
+        {{ $.Changelog }}
+    </div>
 {{ end }}

@@ -13,7 +13,11 @@
 
         {{ $meetsACSRGates := $championship.DriverMeetsACSRGates $.AccountRating }}
 
-        <h1 class="text-center">{{ $championship.Name }}</h1>
+        <div class="zg-page-head">
+            <div class="zg-page-eyebrow">Campeonato</div>
+            <h1 class="zg-page-title">{{ $championship.Name }}</h1>
+            <div class="zg-page-rule"></div>
+        </div>
 
         {{ if $championship.ACSR }}
             <div class="text-center">

@@ -1,30 +1,37 @@
 {{/* gotype: github.com/JustaPenguin/assetto-server-manager.RaceTemplateVars */}}
+{{/* Reestilado 1b: solo cambia el encabezado. El resto (race-setup, entrants,
+     spectator car, scripts) queda igual que el original. */}}
 
 {{ define "title" }}Crear un Fin de Semana de Carrera{{ end }}
 
 {{ define "content" }}
-    <h1 class="text-center">
-        {{ if not $.IsEditing }}
-            Crear un nuevo Fin de Semana de Carrera
-        {{ else }}
-            Editar el Fin de Semana de Carrera {{ $.RaceWeekend.Name }}
-        {{ end }}
-    </h1>
+    <div class="zg-page-head">
+        <div class="zg-page-eyebrow">Sesiones secuenciales</div>
+        <h1 class="zg-page-title">
+            {{ if not $.IsEditing }}
+                Nuevo Fin de Semana
+            {{ else }}
+                Editar {{ $.RaceWeekend.Name }}
+            {{ end }}
+        </h1>
 
-    {{ if $.RaceWeekend.HasLinkedChampionship }}
-        <h4 class="text-center">en el Campeonato {{ $.Championship.Name }}</h4>
-    {{ end }}
+        {{ if $.RaceWeekend.HasLinkedChampionship }}
+            <p class="zg-page-lead">en el Campeonato {{ $.Championship.Name }}</p>
+        {{ end }}
+
+        <div class="zg-page-rule"></div>
+    </div>
 
     {{ template "raceweekend-premium" dict "IsPremium" $.IsPremium }}
 
     <form action="/race-weekends/new/submit" method="post" id="raceweekend-form" data-safe-submit>
         <div class="race-setup">
-            <div class="card mt-3 border-secondary" id="entrants">
+            <div class="card mt-3" id="entrants">
                 <div class="card-header">
                     <strong>Fin de Semana de Carrera</strong>
 
                     {{ if .IsEditing }}
-                        <button type="submit" class="btn btn-success float-right">Guardar Fin de Semana de Carrera</button>
+                        <button type="submit" class="btn btn-sm btn-success float-right">Guardar Fin de Semana de Carrera</button>
                     {{ end }}
                 </div>
 
@@ -71,12 +78,12 @@
 
                         <div class="row">
                             <div class="col-md-8 pt-2">
-                                <p>El Auto, Skin, Lastre, Restrictor y Setup Fijo del último Participante se van a clonar en los nuevos Participantes.</p>
+                                <small>El Auto, Skin, Lastre, Restrictor y Setup Fijo del último Participante se van a clonar en los nuevos Participantes.</small>
                             </div>
                             <div class="col-md-4 text-right">
                                 <input class="form-control numEntrantsToAdd" type="number" name="NumEntrantsToAdd" value="1" min="0" max="40">
 
-                                <button class="btn btn-warning addEntrant">Agregar Participante(s)</button>
+                                <button class="btn zg-btn-outline addEntrant mt-2">Agregar Participante(s)</button>
                             </div>
                         </div>
                     {{ else }}
@@ -89,7 +96,7 @@
         </div>
 
         {{ if not $.RaceWeekend.HasLinkedChampionship }}
-            <div class="card mt-3 border-secondary race-setup">
+            <div class="card mt-3 race-setup">
                 <div class="card-header">
                     <strong>Auto Espectador</strong>
                 </div>
@@ -101,14 +108,14 @@
                 </div>
 
                 <div class="card-body" id="entrants">
-                    <p>
+                    <p class="zg-page-lead">
                         Podés configurar un Auto Espectador para este Fin de Semana de Carrera. Los Autos Espectadores se
                         agregan automáticamente al final de la Lista de Inscriptos de cada Sesión del Fin de Semana de
                         Carrera, y se descuentan de los resultados de cualquier sesión.
                     </p>
 
                     {{ if $.IsHosted }}
-                        <p class="text-danger">Tené en cuenta que el Auto Espectador ocupa 1 lugar en tu servidor alojado. ¡Los eventos pueden fallar al iniciar si tenés demasiados lugares en uso!</p>
+                        <p class="text-danger"><small>Tené en cuenta que el Auto Espectador ocupa 1 lugar en tu servidor alojado. ¡Los eventos pueden fallar al iniciar si tenés demasiados lugares en uso!</small></p>
                     {{ end }}
 
                     <div class="form-group row">
@@ -139,7 +146,7 @@
         <div class="mt-5">
             {{ if .IsEditing }}
                 <input type="hidden" name="Editing" id="Editing" value="{{ $.RaceWeekend.ID.String }}">
-                <button type="submit" class="btn btn-success float-right">Guardar Fin de Semana de Carrera</button>
+                <button type="submit" class="btn btn-success float-right"><i class="fas fa-save mr-1"></i> Guardar Fin de Semana de Carrera</button>
             {{ else }}
                 <div class="float-right">
                     <button type="submit" name="action" value="addEvent" class="btn btn-success">Agregar una Sesión</button>

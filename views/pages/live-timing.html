@@ -1,4 +1,10 @@
 {{/* gotype: github.com/JustaPenguin/assetto-server-manager.liveTimingTemplateVars */}}
+{{/* Reestilado 1b. TODOS los ids/clases que usa el JS del bundle se conservan:
+     .race-control-event-info .race-control-weather-info .race-control-buttons
+     #event-title #track-location #race-time #weatherImage #road-temp #road-temp-text
+     #ambient-temp #ambient-temp-text #popover-content-event-title #trackImage
+     #popover-content-admin-panel #live-table #stored-times #live-table-disconnected
+     #map #trackMapImage #chat-container .live-frames .live-frame-wrapper */}}
 
 {{ define "title" }}Tiempos en Vivo{{ end }}
 
@@ -6,6 +12,45 @@
     <style type="text/css">
         .dot {
             transition: {{ $.CSSDotSmoothing }}ms linear;
+        }
+
+        /* franja de dirección de carrera */
+        .zg-race-control{
+            display:flex;
+            align-items:center;
+            gap:1.1rem;
+            flex-wrap:wrap;
+            background: var(--zg-surface);
+            border: 1px solid var(--zg-border);
+            border-left: 5px solid var(--zg-accent);
+            border-radius: var(--zg-radius-lg);
+            padding: 1rem 1.2rem;
+            margin-bottom: 1rem;
+        }
+        .zg-race-control .race-control-event-info,
+        .zg-race-control .race-control-weather-info{
+            position: static !important;
+            display:flex;
+            align-items:center;
+            gap:.6rem;
+            margin:0;
+        }
+        .zg-race-control-center{ flex:1; min-width: 15rem; text-align:center; }
+        #event-title{
+            font-family:'Rajdhani','Inter',sans-serif;
+            font-size:1.9rem;
+            font-weight:700;
+            text-transform:uppercase;
+            letter-spacing:.02em;
+            color: var(--zg-text) !important;
+        }
+        #event-title:hover{ color: var(--zg-accent-hover) !important; }
+        #track-location{ font-size:.78rem; color: var(--zg-text-dim); }
+        #race-time.badge{
+            font-family:'Rajdhani','Inter',sans-serif;
+            font-size:1.1rem !important;
+            letter-spacing:.08em;
+            padding:.35em .8em;
         }
     </style>
 {{ end }}
@@ -38,58 +83,57 @@
     {{ $UseMPH := .UseMPH }}
 
     {{ with .RaceDetails }}
-        <div class="race-control-event-info">
-            {{ range $sessionName, $session := .RaceConfig.Sessions }}
-                <span data-toggle="tooltip" title="{{ $sessionName.String }}" class="badge badge-primary">{{ trunc 1 $sessionName.String }}</span>
-            {{ end }}
+        <div class="zg-race-control">
+            <div class="race-control-event-info">
+                <div class="zg-session-badges">
+                    {{ range $sessionName, $session := .RaceConfig.Sessions }}
+                        <span data-toggle="tooltip" title="{{ $sessionName.String }}" class="badge zg-session">{{ trunc 1 $sessionName.String }}</span>
+                    {{ end }}
+                </div>
 
-            <br>
-
-            <small class="mr-1" data-toggle="tooltip" title="{{ .EntryList.Entrants }}" >{{ len .EntryList }} <i class="fa fa-user"></i></small>
-
-        </div>
-
-        <div class="race-control-weather-info">
-            <div class="thumb d-lg-inline-block d-none mt-1" style="width:64px;">
-                <img id="weatherImage" src="/static/img/no-preview-general.png" alt="Clima Actual" onerror="this.style.display='none'">
+                <small class="ml-2" data-toggle="tooltip" title="{{ .EntryList.Entrants }}">{{ len .EntryList }} <i class="fa fa-user"></i></small>
             </div>
 
-            <div class="d-inline-block">
-                <div id="road-temp-wrapper" data-toggle="tooltip" data-original-title="Temperatura de Pista">
-                    <div id="road-temp-text"></div>
-                    <img src="/static/img/temp-road.png" alt="Temperatura de Pista" id="road-temp">
+            <div class="zg-race-control-center">
+                <a href="#" id="event-title" data-toggle="popover" data-placement="bottom"></a>
+                <div id="track-location"></div>
+
+                <span id="race-time" class="mt-2 badge badge-primary">--:--:--</span>
+            </div>
+
+            <div class="race-control-weather-info">
+                <div class="thumb d-lg-inline-block d-none" style="width:64px;">
+                    <img id="weatherImage" src="/static/img/no-preview-general.png" alt="Clima Actual" onerror="this.style.display='none'">
                 </div>
-                <div id="ambient-temp-wrapper" class="mt-1" data-toggle="tooltip" data-original-title="Temperatura Ambiente">
-                    <div id="ambient-temp-text"></div>
-                    <img src="/static/img/temp-ambient.png" alt="Temperatura Ambiente" id="ambient-temp">
+
+                <div class="d-inline-block">
+                    <div id="road-temp-wrapper" data-toggle="tooltip" data-original-title="Temperatura de Pista">
+                        <div id="road-temp-text"></div>
+                        <img src="/static/img/temp-road.png" alt="Temperatura de Pista" id="road-temp">
+                    </div>
+                    <div id="ambient-temp-wrapper" class="mt-1" data-toggle="tooltip" data-original-title="Temperatura Ambiente">
+                        <div id="ambient-temp-text"></div>
+                        <img src="/static/img/temp-ambient.png" alt="Temperatura Ambiente" id="ambient-temp">
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="text-center pl-5 pr-5" style="margin-top: -15px">
-            <a href="#" id="event-title" data-toggle="popover" data-placement="bottom"></a>
-            <div id="track-location"></div>
-
-            <span id="race-time" class="mt-2 badge badge-primary" style="font-size: 1em;">--:--:--</span>
-        </div>
-
-        <br>
-
-        <div class="race-control-buttons">
+        <div class="race-control-buttons zg-page-actions mb-3">
             {{ with $CMJoinLink }}
-                <a id="cm-join-link" href="{{ . }}" class="btn btn-success btn-sm mt-1">Unirse</a>
+                <a id="cm-join-link" href="{{ . }}" class="btn btn-success btn-sm"><i class="fas fa-sign-in-alt mr-1"></i> Unirse</a>
             {{ end }}
 
             {{ if AdminAccess }}
-                <button id="admin-panel" data-toggle="popover" class="btn btn-sm btn-info mt-1" data-placement="bottom">Panel de Administración</button>
+                <button id="admin-panel" data-toggle="popover" class="btn btn-sm btn-info" data-placement="bottom"><i class="fas fa-sliders-h mr-1"></i> Panel de Administración</button>
             {{ end }}
 
             {{ if $.IsStrackerEnabled }}
-                <a href="{{ $.STrackerInterfacePublicURL }}" class="btn btn-primary btn-sm mt-1">sTracker</a>
+                <a href="{{ $.STrackerInterfacePublicURL }}" class="btn btn-sm zg-btn-outline"><i class="fas fa-stopwatch mr-1"></i> sTracker</a>
             {{ end }}
 
             {{ if and $.IsKissMyRankEnabled (ne $.KissMyRankWebStatsPublicURL "") }}
-                <a href="{{ $.KissMyRankWebStatsPublicURL }}" target="_blank" class="btn btn-warning btn-sm mt-1">KissMyRank</a>
+                <a href="{{ $.KissMyRankWebStatsPublicURL }}" target="_blank" class="btn btn-sm zg-btn-outline"><i class="fas fa-balance-scale mr-1"></i> KissMyRank</a>
             {{ end }}
         </div>
 
@@ -176,15 +220,12 @@
 
             <a id="next-session" href="/next-session" class="btn btn-success btn-sm mt-3">Próxima Sesión</a>
             <a id="restart-session" href="/restart-session" class="btn btn-warning btn-sm mt-3">Reiniciar Sesión</a>
-
-
-
         </div>
 
         <div class="clearfix"></div>
 
         <div class="row">
-            <div class="col-lg-7 col-md-12 mt-5">
+            <div class="col-lg-7 col-md-12 mt-4">
                 <div class="table-responsive table-sm">
                     <table id="live-table" class="table table-bordered table-striped">
                         <tr>
@@ -205,7 +246,7 @@
                 </div>
 
                 <div id="stored-times" style="display: none">
-                    <h4>Tiempos Guardados</h4>
+                    <h4 class="zg-page-title" style="font-size: 1.4rem;">Tiempos Guardados</h4>
                     <div class="table-responsive table-sm">
                         <table id="live-table-disconnected" class="table table-bordered table-striped">
                             <tr>
@@ -222,7 +263,7 @@
                 </div>
             </div>
 
-            <div class="col-lg-5 col-md-12 mt-5">
+            <div class="col-lg-5 col-md-12 mt-4">
                 {{ if Config.LiveMap.IsEnabled }}
                     <div class="map-container">
                         <div id="map">

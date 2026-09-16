@@ -8,7 +8,11 @@
 
     <div class="container">
 
-        <h1 class="text-center">{{ $.RaceWeekend.Name }}</h1>
+        <div class="zg-page-head">
+            <div class="zg-page-eyebrow">Fin de semana de carrera</div>
+            <h1 class="zg-page-title">{{ $.RaceWeekend.Name }}</h1>
+            <div class="zg-page-rule"></div>
+        </div>
         <p class="text-center">
             <em>
                 {{ if $.RaceWeekend.HasLinkedChampionship }}

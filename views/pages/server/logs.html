@@ -1,35 +1,43 @@
 {{ define "title" }}Registros del Servidor{{ end }}
 
 {{ define "content" }}
-    <h1 class="text-center">Registros del Servidor</h1>
-
-    <p>Esta página te puede ayudar a diagnosticar problemas con el servidor, el manager o cualquier plugin. También podés revisar la
-        <a href="/current-config">configuración actual del servidor</a> para ver si coincide con lo que esperás.</p>
-
-    <h2>Servidor de Assetto Corsa</h2>
-    <div class="card card-body bg-light card-logs">
-        <pre id="server-logs"></pre>
+    <div class="zg-page-head">
+        <div class="zg-page-eyebrow">Diagnóstico</div>
+        <h1 class="zg-page-title">Registros</h1>
+        <p class="zg-page-lead">
+            Para diagnosticar problemas del servidor, el manager o cualquier plugin. También podés revisar la
+            <a href="/current-config">configuración actual del servidor</a> para ver si coincide con lo que esperás.
+        </p>
+        <div class="zg-page-rule"></div>
     </div>
-    <br>
-    <a class="btn btn-primary" href="/api/log-download/server">Descargar Registro del Servidor</a>
 
-    <hr>
-
-    <h2>Server Manager</h2>
-
-    <div class="card card-body bg-light card-logs">
-        <pre id="manager-logs"></pre>
+    <div class="card mb-4">
+        <div class="card-header d-flex align-items-center justify-content-between">
+            <strong>Servidor de Assetto Corsa</strong>
+            <a class="btn btn-sm zg-btn-outline" href="/api/log-download/server"><i class="fas fa-download mr-1"></i> Descargar</a>
+        </div>
+        <div class="card-body card-logs">
+            <pre id="server-logs"></pre>
+        </div>
     </div>
-    <br>
-    <a class="btn btn-primary" href="/api/log-download/manager">Descargar Registro del Manager</a>
 
-    <hr>
-
-    <h2>Plugins</h2>
-
-    <div class="card card-body bg-light card-logs">
-        <pre id="plugin-logs"></pre>
+    <div class="card mb-4">
+        <div class="card-header d-flex align-items-center justify-content-between">
+            <strong>Server Manager</strong>
+            <a class="btn btn-sm zg-btn-outline" href="/api/log-download/manager"><i class="fas fa-download mr-1"></i> Descargar</a>
+        </div>
+        <div class="card-body card-logs">
+            <pre id="manager-logs"></pre>
+        </div>
     </div>
-    <br>
-    <a class="btn btn-primary" href="/api/log-download/plugins">Descargar Registro de Plugins</a>
+
+    <div class="card mb-4">
+        <div class="card-header d-flex align-items-center justify-content-between">
+            <strong>Plugins</strong>
+            <a class="btn btn-sm zg-btn-outline" href="/api/log-download/plugins"><i class="fas fa-download mr-1"></i> Descargar</a>
+        </div>
+        <div class="card-body card-logs">
+            <pre id="plugin-logs"></pre>
+        </div>
+    </div>
 {{ end }}

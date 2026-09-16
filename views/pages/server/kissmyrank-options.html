@@ -1,41 +1,81 @@
 {{/* gotype: github.com/JustaPenguin/assetto-server-manager.kissMyRankConfigurationTemplateVars*/}}
+{{/* Reestilado 1b. {{ $.Form }} lo sigue generando Go. */}}
 
 {{ define "title" }}Opciones de KissMyRank{{ end }}
 
 {{ define "content" }}
-    <h1 class="text-center">Opciones de KissMyRank</h1>
-
-    <p>
-        <a href="https://www.racedepartment.com/downloads/kissmyrank-local-assetto-corsa-server-plugin.17667/">KissMyRank</a> es la popular app del lado del servidor
-        diseñada para promover el conocimiento de la etiqueta de manejo de los pilotos caballeros y las carreras limpias.<br><br>
-
-        <em>KissMyRank no es desarrollado ni mantenido por
-        {{ if $.IsHosted }}Emperor Servers{{ else }}los autores de Server Manager{{ end }}.
-        Si tenés preguntas sobre el funcionamiento de la herramienta KissMyRank en sí, por favor preguntá en el
-            <a href="https://www.racedepartment.com/threads/kissmyrank-local-assetto-corsa-server-plugin.142199/">hilo de soporte de KissMyRank</a>.</em>
-    </p>
-
-    {{ if .IsKMRInstalled }}
-        <p>
-            Estas opciones de configuración se aplican globalmente: se aplican al archivo de configuración de KissMyRank
-            cada vez que Server Manager inicia una configuración de carrera.
+    <div class="zg-page-head">
+        <div class="zg-page-eyebrow">Plugin del servidor</div>
+        <h1 class="zg-page-title">KissMyRank</h1>
+        <p class="zg-page-lead">
+            <a href="https://www.racedepartment.com/downloads/kissmyrank-local-assetto-corsa-server-plugin.17667/">KissMyRank</a>
+            es la popular app del lado del servidor diseñada para promover el conocimiento de la etiqueta de manejo de
+            los pilotos caballeros y las carreras limpias.
         </p>
+        <div class="zg-page-rule"></div>
+    </div>
 
-        <form method="post" action="/kissmyrank/options">
-            {{ $.Form }}
+    <div class="row">
+        <div class="col-lg-3 mb-4">
+            <div class="list-group">
+                {{ if AdminAccess }}
+                    <a class="list-group-item" href="/server-options"><i class="fas fa-cog mr-2"></i>Opciones</a>
+                    <a class="list-group-item" href="/accounts"><i class="fas fa-user mr-2"></i>Cuentas</a>
+                    <a class="list-group-item" href="/blacklist"><i class="fas fa-gavel mr-2"></i>Lista Negra</a>
+                    <a class="list-group-item" href="/motd"><i class="fas fa-comment-alt mr-2"></i>Mensajes</a>
+                    <a class="list-group-item" href="/audit-logs"><i class="fas fa-clipboard-list mr-2"></i>Registro de Auditoría</a>
+                    <a class="list-group-item" href="/stracker/options"><i class="fas fa-stopwatch mr-2"></i>STracker</a>
+                    <a class="list-group-item active" href="/kissmyrank/options"><i class="fas fa-balance-scale mr-2"></i>KissMyRank</a>
+                    <a class="list-group-item" href="/realpenalty/options"><i class="fas fa-shield-alt mr-2"></i>Real Penalty</a>
+                    <a class="list-group-item" href="/current-config"><i class="fas fa-scroll mr-2"></i>Configuración Actual</a>
+                {{ end }}
+                {{ if DeleteAccess }}
+                    <a class="list-group-item" href="/autofill-entrants"><i class="fas fa-users-cog mr-2"></i>Autocompletar Participantes</a>
+                {{ end }}
+                <a class="list-group-item" href="/logs"><i class="fas fa-file-alt mr-2"></i>Registros</a>
+            </div>
+        </div>
 
-            <button class="btn btn-success float-right" type="submit">Guardar</button>
+        <div class="col-lg-9">
+            <p class="zg-page-lead">
+                <em>KissMyRank no es desarrollado ni mantenido por
+                {{ if $.IsHosted }}Emperor Servers{{ else }}los autores de Server Manager{{ end }}.
+                Si tenés preguntas sobre el funcionamiento de la herramienta KissMyRank en sí, por favor preguntá en el
+                <a href="https://www.racedepartment.com/threads/kissmyrank-local-assetto-corsa-server-plugin.142199/">hilo de soporte de KissMyRank</a>.</em>
+            </p>
 
-            <div class="clearfix"></div>
-        </form>
-    {{ else }}
-        <p>KissMyRank no está instalado. Seguí las instrucciones de abajo para instalarlo, o contactá a tu Administrador del Servidor:</p>
+            {{ if .IsKMRInstalled }}
+                <div class="card">
+                    <div class="card-header"><strong>Configuración de KissMyRank</strong></div>
+                    <div class="card-body">
+                        <p class="zg-page-lead">
+                            Estas opciones se aplican globalmente: se aplican al archivo de configuración de KissMyRank
+                            cada vez que Server Manager inicia una configuración de carrera.
+                        </p>
 
-        <ol>
-            <li><a href="https://www.racedepartment.com/downloads/kissmyrank-local-assetto-corsa-server-plugin.17667/">Descargar KissMyRank</a></li>
-            <li>Extraé la carpeta correcta para tu plataforma del zip de KissMyRank en una carpeta llamada "kissmyrank" (respetando mayúsculas y minúsculas) dentro de tu carpeta del servidor de Assetto Corsa</li>
-            <li>Asegurate de haber configurado la Dirección del Plugin UDP y el Puerto Local del Plugin UDP en <a href="/server-options">Opciones del Servidor</a></li>
-            <li>¡Actualizá esta página!</li>
-        </ol>
-    {{ end }}
+                        <form method="post" action="/kissmyrank/options">
+                            {{ $.Form }}
+
+                            <button class="btn btn-success float-right" type="submit"><i class="fas fa-save mr-1"></i> Guardar</button>
+
+                            <div class="clearfix"></div>
+                        </form>
+                    </div>
+                </div>
+            {{ else }}
+                <div class="zg-row-card">
+                    <div class="zg-row-card-title" style="font-size: 1.3rem;">KissMyRank no está instalado</div>
+
+                    <p class="zg-page-lead">Seguí estos pasos para instalarlo, o contactá a tu Administrador del Servidor:</p>
+
+                    <ol class="zg-page-lead">
+                        <li><a href="https://www.racedepartment.com/downloads/kissmyrank-local-assetto-corsa-server-plugin.17667/">Descargar KissMyRank</a></li>
+                        <li>Extraé la carpeta correcta para tu plataforma del zip de KissMyRank en una carpeta llamada "kissmyrank" (respetando mayúsculas y minúsculas) dentro de tu carpeta del servidor de Assetto Corsa</li>
+                        <li>Asegurate de haber configurado la Dirección del Plugin UDP y el Puerto Local del Plugin UDP en <a href="/server-options">Opciones del Servidor</a></li>
+                        <li>¡Actualizá esta página!</li>
+                    </ol>
+                </div>
+            {{ end }}
+        </div>
+    </div>
 {{ end }}

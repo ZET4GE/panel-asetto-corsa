@@ -3,14 +3,56 @@
 {{ define "title" }}Configuración Actual{{ end }}
 
 {{ define "content" }}
-    <h1 class="text-center">Configuración Actual</h1>
+    <div class="zg-page-head">
+        <div class="d-flex align-items-end justify-content-between flex-wrap">
+            <div>
+                <div class="zg-page-eyebrow">Diagnóstico</div>
+                <h1 class="zg-page-title">Configuración Actual</h1>
+            </div>
+        </div>
 
-    <p><small>Esta página contiene el <code>server_cfg.ini</code> y el <code>entry_list.ini</code> que están actualmente
-        aplicados al servidor. Esta información es para diagnóstico, así que es de solo lectura.</small></p>
+        <p class="zg-page-lead">Esta página contiene el <code>server_cfg.ini</code> y el <code>entry_list.ini</code> que están actualmente aplicados al servidor. Esta información es para diagnóstico, así que es de solo lectura.</p>
 
-    <label for="current-config">Configuración del Servidor</label>
-    <textarea readonly id="current-config" name="current-config" class="form-control md-textarea text-area mb-1" rows="40">{{ .ConfigText }}</textarea>
+        <div class="zg-page-rule"></div>
+    </div>
 
-    <label for="entry-list">Lista de Inscriptos</label>
-    <textarea readonly id="entry-list" name="entry-list" class="form-control md-textarea text-area" rows="40">{{ .EntryListText }}</textarea>
+    <div class="row">
+        <div class="col-lg-3 mb-4">
+            <div class="list-group">
+                {{ if AdminAccess }}
+                    <a class="list-group-item" href="/server-options"><i class="fas fa-cog mr-2"></i>Opciones</a>
+                    <a class="list-group-item" href="/accounts"><i class="fas fa-user mr-2"></i>Cuentas</a>
+                    <a class="list-group-item" href="/blacklist"><i class="fas fa-gavel mr-2"></i>Lista Negra</a>
+                    <a class="list-group-item" href="/motd"><i class="fas fa-comment-alt mr-2"></i>Mensajes</a>
+                    <a class="list-group-item" href="/audit-logs"><i class="fas fa-clipboard-list mr-2"></i>Registro de Auditoría</a>
+                    <a class="list-group-item" href="/stracker/options"><i class="fas fa-stopwatch mr-2"></i>STracker</a>
+                    <a class="list-group-item" href="/kissmyrank/options"><i class="fas fa-balance-scale mr-2"></i>KissMyRank</a>
+                    <a class="list-group-item" href="/realpenalty/options"><i class="fas fa-shield-alt mr-2"></i>Real Penalty</a>
+                    <a class="list-group-item active" href="/current-config"><i class="fas fa-scroll mr-2"></i>Configuración Actual</a>
+                {{ end }}
+                {{ if DeleteAccess }}
+                    <a class="list-group-item" href="/autofill-entrants"><i class="fas fa-users-cog mr-2"></i>Autocompletar Participantes</a>
+                {{ end }}
+                <a class="list-group-item" href="/logs"><i class="fas fa-file-alt mr-2"></i>Registros</a>
+            </div>
+        </div>
+
+        <div class="col-lg-9">
+            <div class="card mb-4">
+                <div class="card-header"><strong>server_cfg.ini</strong></div>
+                <div class="card-body">
+                    <label for="current-config" class="sr-only">Configuración del Servidor</label>
+                    <textarea readonly id="current-config" name="current-config" class="form-control md-textarea text-area text-monospace" rows="30">{{ .ConfigText }}</textarea>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header"><strong>entry_list.ini</strong></div>
+                <div class="card-body">
+                    <label for="entry-list" class="sr-only">Lista de Inscriptos</label>
+                    <textarea readonly id="entry-list" name="entry-list" class="form-control md-textarea text-area text-monospace" rows="30">{{ .EntryListText }}</textarea>
+                </div>
+            </div>
+        </div>
+    </div>
 {{ end }}

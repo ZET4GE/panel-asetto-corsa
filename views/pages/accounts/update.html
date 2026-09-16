@@ -3,15 +3,21 @@
 {{ define "title" }}Actualizar Datos de la Cuenta{{ end }}
 
 {{ define "content" }}
-    <div class="col-sm-8 offset-sm-2">
+    <div class="col-lg-8 offset-lg-2">
+        <div class="zg-page-head">
+            <div class="zg-page-eyebrow">Tu cuenta</div>
+            <h1 class="zg-page-title">Tus Datos</h1>
+            <p class="zg-page-lead">
+                Estos datos no son obligatorios, pero se recomiendan. Si los completás vas a quedar agregado a la lista
+                de participantes que los organizadores pueden sumar a los eventos, y se van a completar automáticamente
+                si te inscribís en un evento cerrado.
+            </p>
+            <div class="zg-page-rule"></div>
+        </div>
+
         <form method="post" action="/accounts/update">
             <div class="card mb-3">
-                <div class="card-header"><strong>Actualizar Datos de la Cuenta</strong></div>
                 <div class="card-body">
-                    <p><small>Estos datos de cuenta no son obligatorios, pero se recomiendan. Si completás estos datos
-                            vas a quedar agregado a la lista de participantes que los organizadores de carreras pueden sumar a los eventos y tus datos
-                            se van a completar automáticamente si te inscribís en un evento cerrado.</small></p>
-
                     <div class="form-group row">
                         <label for="DriverName" class="col-sm-3 col-form-label">Nombre de Piloto</label>
 
@@ -35,7 +41,7 @@
                                     type="text"
                                     id="DriverGUID"
                                     name="DriverGUID"
-                                    class="form-control"
+                                    class="form-control text-monospace"
                                     placeholder=""
                                     {{ with .SteamGUIDOverride }}
                                         value="{{ . }}"
@@ -81,7 +87,8 @@
                         </div>
                     </div>
 
-                    <button class="btn btn-primary float-right" type="submit">Enviar</button>
+                    <button class="btn btn-primary float-right" type="submit">Guardar</button>
+                    <div class="clearfix"></div>
                 </div>
             </div>
         </form>

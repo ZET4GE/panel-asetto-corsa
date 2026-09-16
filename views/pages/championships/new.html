@@ -13,13 +13,17 @@
     {{ $f := .Championship }}
     {{ $ACSREnabled := .ACSREnabled }}
 
-    <h1 class="text-center">
-        {{ if .IsEditing }}
-            Editar el Campeonato {{ .Championship.Name }}
-        {{ else }}
-            Crear un nuevo Campeonato
-        {{ end }}
-    </h1>
+    <div class="zg-page-head">
+        <div class="zg-page-eyebrow">Temporadas</div>
+        <h1 class="zg-page-title">
+            {{ if .IsEditing }}
+                Editar el Campeonato {{ .Championship.Name }}
+            {{ else }}
+                Crear un nuevo Campeonato
+            {{ end }}
+        </h1>
+        <div class="zg-page-rule"></div>
+    </div>
 
     <form action="/championships/new/submit" method="post" id="championship-form" data-safe-submit>
 

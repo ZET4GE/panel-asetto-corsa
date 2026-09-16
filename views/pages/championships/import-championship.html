@@ -1,16 +1,22 @@
 {{ define "title" }}Importar Campeonato{{ end }}
 
 {{ define "content" }}
-    <h1 class="text-center">Importar Campeonato</h1>
+    <div class="zg-page-head">
+        <a class="zg-page-eyebrow d-inline-block" href="/championships"><i class="fas fa-caret-left mr-1"></i> Volver a campeonatos</a>
+        <h1 class="zg-page-title">Importar</h1>
+        <p class="zg-page-lead">
+            Acá podés importar campeonatos en formato JSON (el mismo formato que se genera al exportar un campeonato).
+            No recomendamos crear estos datos manualmente, ya que el formato es bastante complejo. Sin embargo, si
+            querés mover campeonatos entre servidores pero no tenés acceso a los archivos, ¡podés usar esta función!
+        </p>
+        <div class="zg-page-rule"></div>
+    </div>
 
     <form method="post" action="/championship/import">
         <label for="import"></label>
-        <textarea id="import" name="import" placeholder="¡Pegá acá el JSON de tu campeonato!" class="form-control md-textarea text-area"></textarea>
+        <textarea id="import" name="import" placeholder="¡Pegá acá el JSON de tu campeonato!" class="form-control md-textarea text-area text-monospace"></textarea>
 
-        <button class="btn btn-success float-right mt-2" type="submit">Guardar</button>
+        <button class="btn btn-success float-right mt-3" type="submit">Guardar</button>
+        <div class="clearfix"></div>
     </form>
-
-    <p><small>Acá podés importar campeonatos en formato JSON (este formato coincide con el que se genera al exportar un
-        campeonato). No recomendamos crear estos datos manualmente, ya que el formato es bastante complejo. Sin embargo,
-        si querés mover campeonatos entre servidores pero no tenés acceso a los archivos, ¡podés usar esta función!</small></p>
 {{ end }}

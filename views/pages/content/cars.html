@@ -1,84 +1,95 @@
 {{/* gotype: github.com/JustaPenguin/assetto-server-manager.carListTemplateVars */}}
+{{/* Reestilado 1b. Se conservan ids/clases del JS de subida y búsqueda:
+     #input-folder-car #drop-zone .car-drop .drop-zone #upload-button #progress-bar
+     #car-fail #car-info-panel #tags #only-ks #search-info #searchHelp .card-car .delete-car */}}
 
 {{ define "title" }}Autos{{ end }}
 
 {{ define "content" }}
-    <h1 class="text-center">Autos</h1>
+    <div class="zg-subnav">
+        <a href="/tracks">Circuitos</a>
+        <a href="/cars" class="active">Autos y Setups</a>
+        <a href="/weather">Clima</a>
+    </div>
+
+    <div class="zg-page-head">
+        <div class="zg-page-eyebrow">Contenido instalado</div>
+        <h1 class="zg-page-title">Autos</h1>
+
+        <form method="get" action="/cars" class="row mt-4">
+            <div class="col-8 col-md-10">
+                <input name="q" placeholder="Buscar autos" class="form-control" value="{{ $.Query }}" autocomplete="off">
+            </div>
+
+            <div class="col-4 col-md-2">
+                <button type="submit" class="btn btn-primary w-100">Buscar</button>
+            </div>
+        </form>
+
+        {{ with .Results }}
+            {{- /*gotype: github.com/blevesearch/bleve.SearchResult */ -}}
+
+            <div id="search-info" class="mt-2" style="color: var(--zg-text-dim)">
+                <div class="float-left">
+                    {{ $pageStart := mul $.CurrentPage $.PageSize }}
+                    <small class="text-monospace">Mostrando resultados {{ $pageStart }}-{{ add $pageStart (len .Hits) }} de {{ .Total }}</small>
+                </div>
+
+                <div class="float-right">
+                    <small class="text-monospace">Búsqueda completada en {{ .Took }} | <a href="#" data-toggle="collapse" data-target="#searchHelp" aria-expanded="false" aria-controls="searchHelp">Ayuda de Búsqueda</a></small>
+                </div>
+
+                <div class="clearfix"></div>
+            </div>
+        {{ end }}
+
+        <div class="zg-page-rule"></div>
+    </div>
 
     {{ if WriteAccess }}
-        <div class="card mb-3">
-            <div class="card-header"><strong>Subir un Auto Nuevo</strong></div>
-            <div class="card-body">
-                <p class="card-text">Podés subir varios autos a la vez colocándolos en una carpeta llamada "cars" y subiendo
-                    toda la carpeta. El proceso de carga solo tomará los archivos que el servidor necesita, así que no debería
-                    demorar demasiado. Si tenés problemas subiendo grandes cantidades de autos a la vez, probá subiéndolos
-                    en lotes.</p>
+        <div class="zg-upload">
+            <div class="d-flex align-items-start justify-content-between flex-wrap">
+                <div>
+                    <div class="zg-upload-title">Subir un auto nuevo</div>
+                    <p class="zg-page-lead mb-0">
+                        Acepta una sola carpeta de auto, varias carpetas o una carpeta <code>cars</code> que contenga
+                        varios autos. Si son muchos, subilos en lotes.
+                    </p>
+                </div>
 
-                <p class="card-text">Primero elegí la carpeta correcta del auto (o la carpeta que la contiene) usando el botón
-                    Elegir una Carpeta de abajo, y después usá el botón Subir Autos para cargar tus autos si la información de
-                    vista previa aparece correctamente.</p>
-
-                <p class="card-text mb-0">La entrada de arrastrar y soltar acepta una sola carpeta de auto, varias carpetas
-                    de autos o una carpeta cars que contenga varios autos.</p>
-
-                <div class="mt-3"><input type="text" class="form-control form-control-sm" id="tags" name="tags"
-                                         placeholder="Agregar etiquetas a todos los autos subidos (ej. GT3, Enduro)"></div>
-
-                <form class="d-inline">
-                    <div class="mt-3 mb-3">
-                        <div class="btn-file btn btn-secondary d-inline-block align-top">
-                            Elegir una Carpeta
-                            <input id="input-folder-car" name="input-folder-car[]" type="file"
-                                   multiple webkitdirectory value="Choose Folder"/>
-                        </div>
-
-                        <div id="drop-zone" class="car-drop ml-2 mr-2 drop-zone d-inline-block">O Arrastrá y Soltá Carpeta(s) Acá</div>
-
-                        <div class="float-right">
-                            <label for="only-ks" class="mr-2">Subir Solo Contenido Oficial KS</label>
-                            <input type="checkbox" name="only-ks" id="only-ks">
-                        </div>
-
-                        <div id="upload-button"></div>
-                    </div>
-
-                    <div class="progress" style="display: none;">
-                        <div class="progress-bar" id="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
-                    </div>
-                </form>
+                <div class="mt-2">
+                    <label for="only-ks" class="mr-2">Subir Solo Contenido Oficial KS</label>
+                    <input type="checkbox" name="only-ks" id="only-ks">
+                </div>
             </div>
+
+            <div class="mt-3"><input type="text" class="form-control form-control-sm" id="tags" name="tags"
+                                     placeholder="Agregar etiquetas a todos los autos subidos (ej. GT3, Enduro)"></div>
+
+            <form class="d-inline">
+                <div class="mt-3 mb-0 d-flex align-items-stretch flex-wrap" style="gap:.75rem">
+                    <div class="btn-file btn zg-btn-outline d-inline-block align-top">
+                        <i class="fas fa-folder-open mr-1"></i> Elegir una Carpeta
+                        <input id="input-folder-car" name="input-folder-car[]" type="file"
+                               multiple webkitdirectory value="Choose Folder"/>
+                    </div>
+
+                    <div id="drop-zone" class="car-drop drop-zone flex-grow-1 d-flex align-items-center justify-content-center">O Arrastrá y Soltá Carpeta(s) Acá</div>
+
+                    <div id="upload-button"></div>
+                </div>
+
+                <div class="progress mt-3" style="display: none;">
+                    <div class="progress-bar" id="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+            </form>
         </div>
 
         <div id="car-fail"></div>
         <div id="car-info-panel"></div>
     {{ end }}
 
-    <form method="get" action="/cars" class="row mt-4 mb-2">
-        <div class="col-8 col-md-10">
-            <input name="q" placeholder="Buscar autos" class="form-control" value="{{ $.Query }}" autocomplete="off">
-        </div>
-
-        <div class="col-4 col-md-2">
-            <button type="submit" class="btn btn-primary w-100">Buscar</button>
-        </div>
-    </form>
-
     {{ with .Results }}
-        {{- /*gotype: github.com/blevesearch/bleve.SearchResult */ -}}
-
-        <div id="search-info" class="text-black-50 mb-2">
-            <div class="float-left">
-                {{ $pageStart := mul $.CurrentPage $.PageSize }}
-                <small>Mostrando resultados {{ $pageStart }}-{{ add $pageStart (len .Hits) }} de {{ .Total }}</small>
-            </div>
-
-            <div class="float-right">
-                <small>Búsqueda completada en {{ .Took }} | <a href="#" data-toggle="collapse" data-target="#searchHelp" aria-expanded="false" aria-controls="searchHelp">Ayuda de Búsqueda</a></small>
-            </div>
-
-            <div class="clearfix"></div>
-        </div>
-
         <div class="collapse" id="searchHelp">
             <div class="card card-body">
                 {{ template "search-help" }}
@@ -87,8 +98,8 @@
 
         {{ range $index, $car := $.Cars }}
 
-            <div class="card mt-2 mb-2 pt-0 pb-0 card-car" data-href="/car/{{ $car.Name }}">
-                <div class="card-body row">
+            <div class="card mt-2 mb-2 card-car" data-href="/car/{{ $car.Name }}">
+                <div class="card-body row align-items-center">
                     {{ with $car.Skins }}
                         <div class="col-12 col-sm-4 col-md-2">
                             <div class="thumb">
@@ -100,30 +111,28 @@
                     <div class="d-block d-sm-none pt-2">&nbsp;</div>
 
                     <div class="col-12 col-sm-8 col-md-10">
-                        <h3 class="mb-0">{{ $car.Details.Name }}</h3>
+                        <h3 class="zg-row-card-title mb-0">{{ $car.Details.Name }}</h3>
 
-                        <div class="mb-2">
+                        <div class="mt-2 mb-2">
                             {{ if $car.IsPaidDLC }}<span class="badge bg-dlc">DLC</span>{{ end }}
                             {{ if $car.IsMod }}<span class="badge bg-mod">Mod</span>{{ end }}
                             {{ if not (or $car.IsPaidDLC $car.IsMod) }}<span class="badge bg-default-content">Por Defecto</span>{{ end }}
+
+                            {{ range $index, $tag := $car.Details.Tags }}
+                                <span class="badge badge-secondary">
+                                    <a href="/cars?q=%2Btags:%22{{ urlquery $tag }}%22">{{ $tag }}</a>
+                                </span>
+                            {{ end }}
                         </div>
 
                         {{ if DeleteAccess }}
-                            <a class="delete-car" href="/car/{{ $car.Name }}/delete"><i class="fa fa-trash"></i></a>
-                        {{ end }}
-
-                        {{ range $index, $tag := $car.Details.Tags }}
-                            <span class="badge badge-secondary">
-                                <a class="text-black-50"
-                                   href="/cars?q=%2Btags:%22{{ urlquery $tag }}%22"
-                                >{{ $tag }}</a>
-                            </span>
+                            <a class="delete-car float-right" href="/car/{{ $car.Name }}/delete"><i class="fa fa-trash"></i></a>
                         {{ end }}
                     </div>
                 </div>
             </div>
         {{ else }}
-            <p>Tu búsqueda no arrojó resultados. Probá con una consulta diferente.</p>
+            <p class="text-center mt-5">Tu búsqueda no arrojó resultados. Probá con una consulta diferente.</p>
         {{ end }}
 
 

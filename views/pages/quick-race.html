@@ -1,3 +1,7 @@
+{{/* Reestilado 1b. Se conservan los ids/clases que usa el JS del race builder:
+     .race-setup, #Track, #TrackLayout, #trackImage, #TimeOrLaps, #RaceTime,
+     #RaceLaps, y el template "cars" (transfer list). */}}
+
 {{ define "title" }}Carrera Rápida{{ end }}
 
 
@@ -15,169 +19,172 @@
 
 
 {{ define "content" }}
-    <h1 class="text-center">Carrera Rápida</h1>
-
-    <p>Configurá una carrera rápida con valores por defecto sensatos, e iniciá el servidor.</p>
+    <div class="zg-page-head">
+        <div class="zg-page-eyebrow">Salí a pista en dos clics</div>
+        <h1 class="zg-page-title">Carrera Rápida</h1>
+        <p class="zg-page-lead">Configurá una carrera rápida con valores por defecto sensatos, e iniciá el servidor.</p>
+        <div class="zg-page-rule"></div>
+    </div>
 
     <form method="post" action="/quick/submit" class="race-setup">
-        <div class="row mb-5">
+        <div class="card mb-4">
+            <div class="card-header"><strong>Circuito y autos</strong></div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-sm-8">
+                        <div class="form-group row">
+                            <label for="Track" class="col-sm-3 col-form-label">
+                                Circuito
+                            </label>
 
-            <div class="col-sm-8">
-                <div class="form-group row">
-                    <label for="Track" class="col-sm-3 col-form-label">
-                        Circuito
-                    </label>
-
-                    <div class="col-sm-9">
-                        <select class="form-control" name="Track" id="Track">
-                            {{ $split := .TrackOpts.Split }}
-
-
-                            {{ with $split.Stock }}
-                                <optgroup label="Stock">
-                                    {{ template "track-options" dict "Tracks" . }}
-                                </optgroup>
-                            {{ end }}
-
-                            {{ with $split.DLC }}
-                                <optgroup label="DLC">
-                                    {{ template "track-options" dict "Tracks" . }}
-                                </optgroup>
-                            {{ end }}
-
-                            {{ with $split.Mod }}
-                                <optgroup label="Mod">
-                                    {{ template "track-options" dict "Tracks" . }}
-                                </optgroup>
-                            {{ end }}
-                        </select>
-                    </div>
-                </div>
+                            <div class="col-sm-9">
+                                <select class="form-control" name="Track" id="Track">
+                                    {{ $split := .TrackOpts.Split }}
 
 
-                <div class="form-group row" style="display: none;">
-                    <label for="TrackLayout" class="col-sm-3 col-form-label">
-                        Trazado del Circuito
-                    </label>
-
-                    <div class="col-sm-9">
-                        <select class="form-control" name="TrackLayout" id="TrackLayout">
-                            {{ range $index, $track := .TrackOpts }}
-                                {{ range $layoutIndex, $layout := $track.Layouts }}
-                                    {{ $name := $layout }}
-                                    {{ $trackInfo := trackInfo $track.Name $layout }}
-
-                                    {{ with $trackInfo }}
-                                        {{ $name = $trackInfo.Name }}
+                                    {{ with $split.Stock }}
+                                        <optgroup label="Stock">
+                                            {{ template "track-options" dict "Tracks" . }}
+                                        </optgroup>
                                     {{ end }}
 
-                                    <option value="{{ $track.Name }}:{{ $layout }}" data-track-name="{{ $layout }}">{{ $name }}</option>
-                                {{ end }}
-                            {{ end }}
-                        </select>
+                                    {{ with $split.DLC }}
+                                        <optgroup label="DLC">
+                                            {{ template "track-options" dict "Tracks" . }}
+                                        </optgroup>
+                                    {{ end }}
+
+                                    {{ with $split.Mod }}
+                                        <optgroup label="Mod">
+                                            {{ template "track-options" dict "Tracks" . }}
+                                        </optgroup>
+                                    {{ end }}
+                                </select>
+                            </div>
+                        </div>
+
+
+                        <div class="form-group row" style="display: none;">
+                            <label for="TrackLayout" class="col-sm-3 col-form-label">
+                                Trazado del Circuito
+                            </label>
+
+                            <div class="col-sm-9">
+                                <select class="form-control" name="TrackLayout" id="TrackLayout">
+                                    {{ range $index, $track := .TrackOpts }}
+                                        {{ range $layoutIndex, $layout := $track.Layouts }}
+                                            {{ $name := $layout }}
+                                            {{ $trackInfo := trackInfo $track.Name $layout }}
+
+                                            {{ with $trackInfo }}
+                                                {{ $name = $trackInfo.Name }}
+                                            {{ end }}
+
+                                            <option value="{{ $track.Name }}:{{ $layout }}" data-track-name="{{ $layout }}">{{ $name }}</option>
+                                        {{ end }}
+                                    {{ end }}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-4">
+                        <div class="thumb">
+                            <img id="trackImage" onerror="this.style.display='none'">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group row mt-3 mb-0">
+                    <label for="Cars" class="col-sm-3 col-form-label">
+                        Autos
+                    </label>
+
+                    <div class="col-sm-9">
+                        {{ template "cars" dict "CarOpts" $.CarOpts "Current" nil }}
+
+                        <small>
+                            Modelos de autos permitidos en el servidor. Los autos que elijas se van a distribuir de
+                            forma pareja entre la cantidad de boxes disponibles del circuito cuando se cree la Lista de
+                            Inscriptos. Los skins de los autos se eligen al azar.
+                        </small>
                     </div>
                 </div>
             </div>
-
-            <div class="col-sm-4">
-                <img class="img img-fluid"
-                     id="trackImage"
-                >
-            </div>
-        </div>
-        <div class="form-group row">
-            <label for="Cars" class="col-sm-2 col-form-label">
-                Autos
-            </label>
-
-            <div class="col-sm-10">
-                {{ template "cars" dict "CarOpts" $.CarOpts "Current" nil }}
-
-                <small>
-
-                    Modelos de autos permitidos en el servidor. Los autos que elijas se van a distribuir de forma
-                    pareja entre la cantidad de boxes disponibles del circuito cuando se cree la Lista de Inscriptos.
-
-                    Los skins de los autos se eligen al azar.
-                </small>
-            </div>
         </div>
 
-        <hr>
+        <div class="card mb-4">
+            <div class="card-header"><strong>Clasificación</strong></div>
+            <div class="card-body">
+                <p class="zg-page-lead">Las Prácticas están deshabilitadas en las Carreras Rápidas. ¿Tal vez preferís una <a href="/custom">Carrera Personalizada</a>?</p>
 
-        <h2>Clasificación</h2>
+                <div class="form-group row mb-0">
+                    <label for="Qualifying.Time" class="col-sm-3 col-form-label">Tiempo</label>
 
-        <p>Las Prácticas están deshabilitadas en las Carreras Rápidas. ¿Tal vez preferís una <a href="/custom">Carrera Personalizada</a>?</p>
-
-        <div class="form-group row">
-            <label for="Qualifying.Time" class="col-sm-3 col-form-label">Tiempo</label>
-
-            <div class="col-sm-9">
-                <input
-                        type="number"
-                        id="Qualifying.Time"
-                        name="Qualifying.Time"
-                        class="form-control"
-                        value="10"
+                    <div class="col-sm-9">
+                        <input
+                                type="number"
+                                id="Qualifying.Time"
+                                name="Qualifying.Time"
+                                class="form-control"
+                                value="10"
 
 
-                        step="1"
-                >
+                                step="1"
+                        >
 
-                <small>Duración de la sesión en minutos</small>
+                        <small>Duración de la sesión en minutos</small>
+                    </div>
+                </div>
             </div>
         </div>
 
+        <div class="card mb-4">
+            <div class="card-header"><strong>Carrera</strong></div>
+            <div class="card-body">
+                <div class="form-group row mb-0">
+                    <div class="col-sm-3">
+                        <select id="TimeOrLaps" class="form-control">
+                            <option value="Time" selected="selected">Tiempo</option>
+                            <option value="Laps">Vueltas</option>
+                        </select>
+                    </div>
 
-        <hr>
-
-
-        <h2>Carrera</h2>
-
-
-        <div class="form-group row">
-            <div class="col-sm-3">
-                <select id="TimeOrLaps" class="form-control">
-                    <option value="Time" selected="selected">Tiempo</option>
-                    <option value="Laps">Vueltas</option>
-                </select>
-            </div>
-
-            <div class="col-sm-9" id="RaceTime">
-                <input
-                        type="number"
-                        id="Race.Time"
-                        name="Race.Time"
-                        class="form-control"
-                        value="15"
+                    <div class="col-sm-9" id="RaceTime">
+                        <input
+                                type="number"
+                                id="Race.Time"
+                                name="Race.Time"
+                                class="form-control"
+                                value="15"
 
 
-                        step="1"
-                >
+                                step="1"
+                        >
 
-                <small>Duración de la sesión en minutos</small>
-            </div>
-
-
-            <div class="col-sm-9" id="RaceLaps" style="display: none;">
-                <input
-                        type="number"
-                        id="Race.Laps"
-                        name="Race.Laps"
-                        class="form-control"
-                        value="0"
+                        <small>Duración de la sesión en minutos</small>
+                    </div>
 
 
-                        step="1"
-                >
+                    <div class="col-sm-9" id="RaceLaps" style="display: none;">
+                        <input
+                                type="number"
+                                id="Race.Laps"
+                                name="Race.Laps"
+                                class="form-control"
+                                value="0"
 
-                <small>Cantidad de vueltas en la carrera</small>
+
+                                step="1"
+                        >
+
+                        <small>Cantidad de vueltas en la carrera</small>
+                    </div>
+                </div>
             </div>
         </div>
 
-
-
-        <button class="btn btn-success float-right" type="submit">Iniciar Carrera</button>
+        <button class="btn btn-success float-right" type="submit"><i class="fas fa-play mr-1"></i> Iniciar Carrera</button>
 
         <div class="clearfix"></div>
     </form>

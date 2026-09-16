@@ -1,49 +1,61 @@
 {{/* gotype: github.com/JustaPenguin/assetto-server-manager.trackListTemplateVars */}}
+{{/* Reestilado 1b. Se conservan los ids/clases que usa el JS de subida:
+     #input-folder-track #drop-zone .track-drop .drop-zone #upload-button
+     #progress-bar #track-fail #track-info-panel #only-ks .card-car .delete-car */}}
 
 {{ define "title" }}Circuitos{{ end }}
 
 {{ define "content" }}
-    <h1 class="text-center">Circuitos</h1>
+    <div class="zg-subnav">
+        <a href="/tracks" class="active">Circuitos</a>
+        <a href="/cars">Autos y Setups</a>
+        <a href="/weather">Clima</a>
+    </div>
+
+    <div class="zg-page-head">
+        <div class="zg-page-eyebrow">Contenido instalado</div>
+        <div class="d-flex align-items-end flex-wrap">
+            <h1 class="zg-page-title">Circuitos</h1>
+            <span class="text-monospace ml-3 mb-2" style="color: var(--zg-text-dim)">{{ len $.Tracks }} instalados</span>
+        </div>
+        <div class="zg-page-rule"></div>
+    </div>
 
     {{ if WriteAccess }}
-        <div class="card mb-3">
-            <div class="card-header"><strong>Subir un Circuito Nuevo</strong></div>
-            <div class="card-body">
-                <p class="card-text">Podés subir varios circuitos a la vez colocándolos en una carpeta llamada "tracks" y subiendo
-                    toda la carpeta. El proceso de carga solo tomará los archivos que el servidor necesita, así que no debería
-                    demorar demasiado. Si tenés problemas subiendo grandes cantidades de circuitos a la vez, probá subiéndolos
-                    en lotes.</p>
+        <div class="zg-upload">
+            <div class="d-flex align-items-start justify-content-between flex-wrap">
+                <div>
+                    <div class="zg-upload-title">Subir un circuito nuevo</div>
+                    <p class="zg-page-lead mb-0">
+                        Acepta una sola carpeta de circuito, varias carpetas o una carpeta <code>tracks</code> que
+                        contenga varios circuitos. El proceso solo toma los archivos que el servidor necesita; si son
+                        muchos, subilos en lotes.
+                    </p>
+                </div>
 
-                <p class="card-text">Primero elegí la carpeta correcta del circuito (o la carpeta que la contiene) usando el botón
-                    Elegir una Carpeta de abajo, y después usá el botón Subir Circuitos para cargar tus circuitos si la información
-                    de vista previa aparece correctamente.</p>
-
-                <p class="card-text mb-0">La entrada de arrastrar y soltar acepta una sola carpeta de circuito, varias carpetas
-                de circuitos o una carpeta tracks que contenga varios circuitos.</p>
-
-                <form class="d-inline">
-                    <div class="mt-3 mb-3">
-                        <div class="btn-file btn btn-secondary d-inline-block align-top">
-                            Elegir una Carpeta
-                            <input id="input-folder-track" name="input-folder-track[]" type="file"
-                                    webkitdirectory multiple value="Choose Folder"/>
-                        </div>
-
-                        <div id="drop-zone" class="track-drop ml-2 mr-2 drop-zone d-inline-block">O Arrastrá y Soltá Carpeta(s) Acá</div>
-
-                        <div class="float-right">
-                            <label for="only-ks" class="mr-2">Subir Solo Contenido Oficial KS</label>
-                            <input type="checkbox" name="only-ks" id="only-ks">
-                        </div>
-
-                        <div id="upload-button"></div>
-                    </div>
-
-                    <div class="progress" style="display: none;">
-                        <div class="progress-bar" id="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
-                    </div>
-                </form>
+                <div class="mt-2">
+                    <label for="only-ks" class="mr-2">Subir Solo Contenido Oficial KS</label>
+                    <input type="checkbox" name="only-ks" id="only-ks">
+                </div>
             </div>
+
+            <form class="d-inline">
+                <div class="mt-3 mb-0 d-flex align-items-stretch flex-wrap" style="gap:.75rem">
+                    <div class="btn-file btn zg-btn-outline d-inline-block align-top">
+                        <i class="fas fa-folder-open mr-1"></i> Elegir una Carpeta
+                        <input id="input-folder-track" name="input-folder-track[]" type="file"
+                                webkitdirectory multiple value="Choose Folder"/>
+                    </div>
+
+                    <div id="drop-zone" class="track-drop drop-zone flex-grow-1 d-flex align-items-center justify-content-center">O Arrastrá y Soltá Carpeta(s) Acá</div>
+
+                    <div id="upload-button"></div>
+                </div>
+
+                <div class="progress mt-3" style="display: none;">
+                    <div class="progress-bar" id="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+            </form>
         </div>
 
         <div id="track-fail"></div>
@@ -53,8 +65,8 @@
     {{ $writeAccess := WriteAccess }}
 
     {{ range $i, $track := $.Tracks }}
-        <div class="card mt-2 mb-2 pt-0 pb-0 card-car" data-href="/track/{{ $track.Name }}">
-            <div class="card-body row">
+        <div class="card mt-2 mb-2 card-car" data-href="/track/{{ $track.Name }}">
+            <div class="card-body row align-items-center">
                 <div class="col-12 col-sm-4 col-md-2">
                     <div class="thumb">
                         <img class="car-image" src="{{ $track.GetImagePath }}" alt="{{ $track.Name }}" onerror="this.style.display='none'">
@@ -64,23 +76,21 @@
                 <div class="d-block d-sm-none pt-2">&nbsp;</div>
 
                 <div class="col-12 col-sm-8 col-md-10">
-                    <h3 class="mb-0">{{ $track.PrettyName }}</h3>
+                    <h3 class="zg-row-card-title mb-0">{{ $track.PrettyName }}</h3>
 
-                    <div class="mb-2">
+                    <div class="mt-2 mb-2">
                         {{ if $track.IsPaidDLC }}<span class="badge bg-dlc">DLC</span>{{ end }}
                         {{ if $track.IsMod }}<span class="badge bg-mod">Mod</span>{{ end }}
                         {{ if not (or $track.IsPaidDLC $track.IsMod) }}<span class="badge bg-default-content">Por Defecto</span>{{ end }}
                     </div>
 
                     {{ with $track.Layouts }}
-                        <small>{{ $track.LayoutsCSV }}</small>
+                        <small>Layouts: {{ $track.LayoutsCSV }}</small>
                     {{ end }}
 
                     {{ if DeleteAccess }}
-                        <a class="delete-car" href="/track/{{ $track.Name }}/delete"><i class="fa fa-trash"></i></a>
+                        <a class="delete-car float-right" href="/track/{{ $track.Name }}/delete"><i class="fa fa-trash"></i></a>
                     {{ end }}
-
-                    <br>
                 </div>
             </div>
         </div>

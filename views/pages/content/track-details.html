@@ -1,98 +1,98 @@
 {{/* gotype: github.com/JustaPenguin/assetto-server-manager.trackDetailsTemplateVars */}}
+{{/* Reestilado 1b. Se conservan .track-details, .track-layout, .car-image,
+     #TrackNotes, #summernote y #championship-info (editor enriquecido del JS). */}}
 
 {{ define "title" }}{{ $.Track.PrettyName }}{{ end }}
 
 {{ define "content" }}
     <div class="track-details">
-        <h1 class="text-center mb-0">{{ $.Track.PrettyName }}</h1>
+        <div class="zg-page-head">
+            <a class="zg-page-eyebrow d-inline-block" href="/tracks"><i class="fas fa-caret-left mr-1"></i> Volver a circuitos</a>
+            <h1 class="zg-page-title">{{ $.Track.PrettyName }}</h1>
 
-        <div class="mb-2 text-center">
-            {{ if $.Track.IsPaidDLC }}<span class="badge bg-dlc">DLC</span>{{ end }}
-            {{ if $.Track.IsMod }}<span class="badge bg-mod">Mod</span>{{ end }}
-            {{ if not (or $.Track.IsPaidDLC $.Track.IsMod) }}<span class="badge bg-default-content">Por Defecto</span>{{ end }}
+            <div class="mt-3">
+                {{ if $.Track.IsPaidDLC }}<span class="badge bg-dlc">DLC</span>{{ end }}
+                {{ if $.Track.IsMod }}<span class="badge bg-mod">Mod</span>{{ end }}
+                {{ if not (or $.Track.IsPaidDLC $.Track.IsMod) }}<span class="badge bg-default-content">Por Defecto</span>{{ end }}
+
+                {{ with $.Track.MetaData.DownloadURL }}
+                    <a class="btn btn-sm zg-btn-outline ml-2" href="{{ . }}"><i class="fas fa-download mr-1"></i> Descargar</a>
+                {{ end }}
+            </div>
+
+            <div class="zg-page-rule"></div>
         </div>
 
         {{ with $.Track.MetaData.Notes }}
-            <h2>Notas</h2>
-
-            <p>{{ trustHTML . }}</p>
+            <div class="zg-row-card">
+                <div class="zg-row-card-title" style="font-size: 1.3rem;">Notas</div>
+                <div class="zg-page-lead">{{ trustHTML . }}</div>
+            </div>
         {{ end }}
 
-        {{ with $.Track.MetaData.DownloadURL }}
-            <div class="mb-2 float-right"><a class="btn btn-primary" href="{{ . }}">Descargar</a></div>
-
-            <div class="clearfix"></div>
-        {{ end }}
-
-        <h2>Trazados</h2>
+        <h2 class="zg-page-title mt-4" style="font-size: 1.9rem;">Trazados</h2>
+        <hr>
 
         {{ range $index, $layout := $.Track.Layouts }}
-            <div class="card mt-2">
+            <div class="card mt-3">
                 <div class="card-body">
 
                     <div class="row">
                         <div class="col-md-4">
-                            <div class="card-img track-layout">
-                                <img class="img img-fluid car-image" src="{{ trackLayoutURL $.Track.Name $layout }}"
+                            <div class="thumb track-layout">
+                                <img class="car-image" src="{{ trackLayoutURL $.Track.Name $layout }}"
                                      alt="{{ $.Track.PrettyName }}, layout {{ $layout }}"
                                      title="{{ prettify $layout true }}" data-layout="{{ $layout }}"
-                                     data-toggle="tooltip" data-placement="bottom">
+                                     data-toggle="tooltip" data-placement="bottom"
+                                     onerror="this.style.display='none'">
                             </div>
                         </div>
 
-                        <div class="col-md-8">
-                            <h3 class="card-title mb-0">Trazado {{ prettify $layout true }}</h3>
+                        <div class="col-md-8 mt-3 mt-md-0">
+                            <h3 class="zg-row-card-title mb-1">Trazado {{ prettify $layout true }}</h3>
 
                             {{ $info := index $.TrackInfo $layout }}
 
                             {{ with $info }}
-                                <div class="mb-1"><i>{{ $info.City }} {{ $info.Country }}</i></div>
+                                <div class="mb-3" style="color: var(--zg-text-dim)"><i class="fas fa-map-marker-alt fa-xs mr-1"></i>{{ $info.City }} {{ $info.Country }}</div>
 
-                                <span><strong>Longitud: </strong>{{ $info.Length }}</span>
-                                <span><strong>Sentido: </strong>{{ $info.Run }}</span>
-                                <span><strong>Ancho: </strong>{{ $info.Width }}</span>
-                                <span><strong>Boxes: </strong>{{ $info.Pitboxes }}</span>
+                                <div class="zg-row-card-meta flex-wrap">
+                                    <span>Longitud <b>{{ $info.Length }}</b></span>
+                                    <span>Sentido <b>{{ $info.Run }}</b></span>
+                                    <span>Ancho <b>{{ $info.Width }}</b></span>
+                                    <span>Boxes <b>{{ $info.Pitboxes }}</b></span>
+                                </div>
 
-                                <div><strong>Geoetiquetas: </strong>{{ stringArrayToCSV $info.Geotags }}</div>
-
-                                <div><strong>Etiquetas: </strong>{{ stringArrayToCSV $info.Tags }}</div>
+                                <div class="mt-3"><small><strong>Geoetiquetas:</strong> {{ stringArrayToCSV $info.Geotags }}</small></div>
+                                <div><small><strong>Etiquetas:</strong> {{ stringArrayToCSV $info.Tags }}</small></div>
                             {{ end }}
                         </div>
                     </div>
 
                     {{ with $info }}
-                        <div class="row mt-2">
-                            <div class="col-md-12">
-                                <p>{{ $info.Description }}</p>
-                            </div>
-                        </div>
+                        <p class="zg-page-lead mt-3 mb-0">{{ $info.Description }}</p>
                     {{ end }}
                 </div>
 
-                <hr>
+                <div class="card-body border-top">
+                    <div class="d-flex align-items-baseline justify-content-between">
+                        <h2 class="zg-page-title" style="font-size: 1.4rem;">Sesiones</h2>
+                        {{ $results := index $.Results $layout }}
+                        <small style="color: var(--zg-text-dim)">Este trazado se usó en {{ len $results }} sesiones.</small>
+                    </div>
 
-                <div class="card-body">
-
-                    <h2>Sesiones</h2>
-
-                    {{ $results := index $.Results $layout }}
-
-                    <p>Este trazado se usó en {{ len $results}} sesiones.</p>
-
-                    <div class="list-group overflow-auto mt-3 mb-3" style="max-height: 300px;">
+                    <div class="list-group overflow-auto mt-3" style="max-height: 300px;">
                         {{ range $index, $session := $results }}
                             <a class="list-group-item list-group-item-action"
                                href="/results/{{ $session.SessionFile }}">
                                 <div class="d-flex w-100 justify-content-between">
-                                    <h5 class="mb-2 text-primary">
-                                        <strong>{{ title (lower $session.Type.String) }}</strong></h5>
-                                    <small>{{ fullTimeFormat $session.Date }}</small>
+                                    <strong>{{ title (lower $session.Type.String) }}</strong>
+                                    <small class="text-monospace">{{ fullTimeFormat $session.Date }}</small>
                                 </div>
-                                <p class="mb-1">{{ carList $session.Cars }}</p>
+                                <p class="mb-0"><small>{{ carList $session.Cars }}</small></p>
                             </a>
                         {{ end }}
                     </div>
-
                 </div>
             </div>
 
@@ -100,8 +100,8 @@
 
         {{ if WriteAccess }}
             <form method="post" action="/track/{{ $.Track.Name }}/metadata">
-                <div class="card mt-3 border-primary mt-5 mb-3">
-                    <div class="card-header text-white bg-primary">
+                <div class="card mt-5 mb-3">
+                    <div class="card-header">
                         <strong>Metadatos del Circuito</strong>
                     </div>
                     <div class="card-body">
@@ -141,30 +141,26 @@
                             </div>
                         </div>
 
-                        <div class="float-right mt-5">
-                            <button class="btn btn-primary" type="submit">Guardar Metadatos del Circuito</button>
-                        </div>
+                        <button class="btn btn-success float-right mt-4" type="submit"><i class="fas fa-save mr-1"></i> Guardar Metadatos</button>
+                        <div class="clearfix"></div>
                     </div>
                 </div>
             </form>
         {{ end }}
 
         {{ if DeleteAccess }}
-            <div class="card border-danger mt-3 mb-3">
-                <div class="card-header text-white bg-danger">
-                    ¡Zona de Peligro!
-                </div>
-
-                <div class="card-body">
-                    <p class="float-left">Eliminar permanentemente este circuito y todos sus trazados asociados.</p>
+            <div class="zg-row-card mt-4" style="border-left-color: var(--zg-accent)">
+                <div class="d-flex align-items-center justify-content-between flex-wrap">
+                    <div>
+                        <div class="zg-row-card-title" style="font-size: 1.3rem;">Zona de peligro</div>
+                        <p class="zg-page-lead mb-0">Eliminar permanentemente este circuito y todos sus trazados asociados.</p>
+                    </div>
 
                     <a onclick="return confirm('¿Estás seguro de que querés eliminar permanentemente este circuito y todos sus trazados asociados?');"
-                       class="btn btn-danger float-right"
+                       class="btn btn-danger"
                        href="/track/{{ $.Track.Name }}/delete">
                         Eliminar Circuito
                     </a>
-
-                    <div class="clearfix"></div>
                 </div>
             </div>
         {{ end }}

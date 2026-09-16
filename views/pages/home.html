@@ -5,426 +5,269 @@
 {{ define "content" }}
     {{ template "premium" dict "IsPremium" $.IsPremium }}
 
-    <div class="zg-hero">
-        <div class="zg-hero-eyebrow"><span class="zg-brand-flag" aria-hidden="true"></span>Zonegan Racing</div>
-        <h1 class="zg-hero-title">{{ $.ServerName }}</h1>
-    </div>
-
     {{ with .RaceDetails }}
-        <div class="card mb-4">
-            {{ if $.ServerEvent.IsChampionship }}
-                <h5 class="card-header">{{ if $.ServerEvent.IsPractice }}Práctica{{ else }}Evento{{ end }} de Campeonato en Curso</h5>
-            {{ else if $.ServerEvent.IsRaceWeekend }}
-                <h5 class="card-header">{{ if $.ServerEvent.IsPractice }}Práctica de {{ end }}Fin de Semana de Carrera en Curso</h5>
-            {{ else }}
-                <h5 class="card-header">Evento en Curso</h5>
-            {{ end }}
+        {{ $trackInfo := trackInfo .RaceConfig.Track .RaceConfig.TrackLayout }}
 
-            <div class="card-body row home-race-info">
-                <div class="col-md-8">
+        <div class="zg-event-hero">
+            <div class="zg-page-eyebrow">
+                {{ if $.ServerEvent.IsChampionship }}
+                    {{ if $.ServerEvent.IsPractice }}Práctica de campeonato en curso{{ else }}Evento de campeonato en curso{{ end }}
+                {{ else if $.ServerEvent.IsRaceWeekend }}
+                    {{ if $.ServerEvent.IsPractice }}Práctica de {{ end }}Fin de semana de carrera en curso
+                {{ else }}
+                    Evento en curso
+                {{ end }}
+            </div>
 
-                    {{ template "race-card" . }}
+            <h1 class="zg-event-title">
+                {{ with $trackInfo }}
+                    {{- /*gotype: github.com/JustaPenguin/assetto-server-manager.TrackInfo*/ -}}
+                    {{ .Name }}
+                {{ else }}
+                    {{ prettify .RaceConfig.Track false }} {{ with .RaceConfig.TrackLayout }}({{ prettify . true }}){{ end }}
+                {{ end }}
+            </h1>
 
-                    <div class="button-bar">
-                        {{ if not $.PerformanceMode }}
-                            <a href="/live-timing" class="btn btn-primary">Tiempos en Vivo</a>
-                        {{ end }}
+            <div class="zg-stats">
+                <div class="zg-stat zg-stat-light">
+                    <div class="zg-stat-label">Anotados</div>
+                    <div class="zg-stat-value" data-toggle="tooltip" title="{{ .EntryList.Entrants }}">
+                        {{ len .EntryList }} <i class="fas fa-user fa-xs"></i>
+                    </div>
+                </div>
 
-
-                        {{ if WriteAccess }}
-                            <div class="float-right">
-                                <a
-                                    href="/process/restart"
-                                    class="btn btn-warning"
-
-                                    {{ if not $.ServerEvent.IsPractice }}
-                                        {{ if $.ServerEvent.IsChampionship }}
-                                            onClick="return confirm('Entiendo que esto va a cancelar el evento de campeonato actual y todo el progreso se va a perder permanentemente');"
-                                        {{ else if $.ServerEvent.IsRaceWeekend }}
-                                            onClick="return confirm('Entiendo que esto va a cancelar la sesión de fin de semana de carrera actual y todo el progreso se va a perder permanentemente');"
-                                        {{ end }}
-                                    {{ end }}
-                                >
-                                    Reiniciar Evento
-                                </a>
-                                <a
-                                    href="/process/stop"
-                                    class="btn btn-danger"
-
-                                    {{ if not $.ServerEvent.IsPractice }}
-                                        {{ if $.ServerEvent.IsChampionship }}
-                                            onClick="return confirm('Entiendo que esto va a cancelar el evento de campeonato actual y todo el progreso se va a perder permanentemente');"
-                                        {{ else if $.ServerEvent.IsRaceWeekend }}
-                                            onClick="return confirm('Entiendo que esto va a cancelar la sesión de fin de semana de carrera actual y todo el progreso se va a perder permanentemente');"
-                                        {{ end }}
-                                    {{ end }}
-                                >
-                                    Detener Evento
-                                </a>
-                            </div>
+                <div class="zg-stat">
+                    <div class="zg-stat-label mb-2">Sesiones</div>
+                    <div class="zg-session-badges">
+                        {{ range $sessionName, $session := .RaceConfig.Sessions }}
+                            <span data-toggle="tooltip" title="{{ $sessionName.String }}" class="badge zg-session">{{ trunc 1 $sessionName.String }}</span>
                         {{ end }}
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <img class="img img-fluid ml-2"
-                         id="trackImage"
-                         src="/content/tracks/{{ .RaceConfig.Track }}/ui{{ with .RaceConfig.TrackLayout }}/{{.}}{{ end }}/preview.png"
-                         alt="{{ .RaceConfig.Track }} {{ .RaceConfig.TrackLayout }}"
-                    >
+
+                <div class="zg-stat zg-stat-fill">
+                    <div class="zg-stat-text">
+                        {{ with $trackInfo }}
+                            <i class="fas fa-map-marker-alt fa-xs mr-1"></i>{{ $trackInfo.City }}, {{ $trackInfo.Country }}
+                        {{ end }}
+                        <small>{{ carList .RaceConfig.Cars }}</small>
+                    </div>
+                </div>
+
+                <div class="d-none d-md-block" style="width: 236px;">
+                    <div class="thumb">
+                        <img id="trackImage"
+                             src="/content/tracks/{{ .RaceConfig.Track }}/ui{{ with .RaceConfig.TrackLayout }}/{{.}}{{ end }}/preview.png"
+                             alt="{{ .RaceConfig.Track }} {{ .RaceConfig.TrackLayout }}"
+                             onerror="this.style.display='none'">
+                    </div>
                 </div>
             </div>
+
+            <div class="zg-page-actions mt-4">
+                {{ if not $.PerformanceMode }}
+                    <a href="/live-timing" class="btn btn-primary"><i class="fas fa-stopwatch mr-1"></i> Tiempos en Vivo</a>
+                {{ end }}
+
+                {{ if WriteAccess }}
+                    <a
+                        href="/process/restart"
+                        class="btn zg-btn-light"
+
+                        {{ if not $.ServerEvent.IsPractice }}
+                            {{ if $.ServerEvent.IsChampionship }}
+                                onClick="return confirm('Entiendo que esto va a cancelar el evento de campeonato actual y todo el progreso se va a perder permanentemente');"
+                            {{ else if $.ServerEvent.IsRaceWeekend }}
+                                onClick="return confirm('Entiendo que esto va a cancelar la sesión de fin de semana de carrera actual y todo el progreso se va a perder permanentemente');"
+                            {{ end }}
+                        {{ end }}
+                    >
+                        Reiniciar Evento
+                    </a>
+                    <a
+                        href="/process/stop"
+                        class="btn zg-btn-outline"
+
+                        {{ if not $.ServerEvent.IsPractice }}
+                            {{ if $.ServerEvent.IsChampionship }}
+                                onClick="return confirm('Entiendo que esto va a cancelar el evento de campeonato actual y todo el progreso se va a perder permanentemente');"
+                            {{ else if $.ServerEvent.IsRaceWeekend }}
+                                onClick="return confirm('Entiendo que esto va a cancelar la sesión de fin de semana de carrera actual y todo el progreso se va a perder permanentemente');"
+                            {{ end }}
+                        {{ end }}
+                    >
+                        Detener Evento
+                    </a>
+                {{ end }}
+            </div>
+        </div>
+    {{ else }}
+        <div class="zg-page-head">
+            <div class="zg-page-eyebrow"><span class="zg-brand-flag mr-2" aria-hidden="true"></span>Zonegan Racing</div>
+            <h1 class="zg-page-title zg-lg">{{ $.ServerName }}</h1>
+            <div class="zg-page-rule"></div>
         </div>
     {{ end }}
 
-    <h2 class="zg-section-title">Carreras</h2>
+    <h2 class="zg-page-title" style="font-size: 2.1rem;">Carreras</h2>
+    <div class="zg-page-rule mb-4"></div>
 
     <div class="row">
         {{ if WriteAccess }}
             <div class="col-md-6 col-lg-4 mt-4">
-                <a class="card zg-action-card" href="/quick">
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-5">
-                                <h1 class="text-center"><i class="fas fa-fighter-jet fa-2x"></i></h1>
-                            </div>
-
-                            <div class="col-7">
-                                <h3>Carrera Rápida</h3>
-                            </div>
-                        </div>
+                <a class="card zg-plate zg-plate-primary" href="/quick">
+                    <div class="zg-plate-row">
+                        <i class="fas fa-fighter-jet"></i>
+                        <span class="zg-plate-num">01</span>
                     </div>
+                    <h3>Carrera Rápida</h3>
+                    <div class="zg-plate-sub">Salí a pista en dos clics</div>
                 </a>
             </div>
         {{ end }}
 
         <div class="col-md-6 col-lg-4 mt-4">
-            <a class="card zg-action-card" href="/custom">
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-5">
-                            <h1 class="text-center"><i class="fas fa-palette fa-2x"></i></h1>
-                        </div>
-
-                        <div class="col-7">
-                            <h3>Carreras Personalizadas</h3>
-                        </div>
-                    </div>
+            <a class="card zg-plate" href="/custom">
+                <div class="zg-plate-row">
+                    <i class="fas fa-palette"></i>
+                    <span class="zg-plate-num">02</span>
                 </div>
+                <h3>Personalizadas</h3>
+                <div class="zg-plate-sub">Armá la sesión a medida</div>
             </a>
         </div>
 
         <div class="col-md-6 col-lg-4 mt-4">
-            <a class="card zg-action-card" href="/championships">
-                <div class="card-body">
-                    <div class="row">
-
-                        <div class="col-5">
-                            <h1 class="text-center"><i class="fas fa-flag-checkered fa-2x"></i></h1>
-                        </div>
-
-                        <div class="col-7">
-                            <h3>Campeonatos</h3>
-                        </div>
-                    </div>
-
+            <a class="card zg-plate" href="/championships">
+                <div class="zg-plate-row">
+                    <i class="fas fa-flag-checkered"></i>
+                    <span class="zg-plate-num">03</span>
                 </div>
+                <h3>Campeonatos</h3>
+                <div class="zg-plate-sub">Temporadas y puntos</div>
             </a>
         </div>
 
         <div class="col-md-6 col-lg-4 mt-4">
-            <a class="card zg-action-card" href="/race-weekends">
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-5">
-                            <h1 class="text-center"><i class="fas fa-car-crash fa-2x"></i></h1>
-                        </div>
-
-                        <div class="col-7">
-                            <h3>Fines de Semana de Carrera</h3>
-                        </div>
-                    </div>
+            <a class="card zg-plate" href="/race-weekends">
+                <div class="zg-plate-row">
+                    <i class="fas fa-car-crash"></i>
+                    <span class="zg-plate-num">04</span>
                 </div>
+                <h3>Fines de Semana</h3>
+                <div class="zg-plate-sub">Práctica, clasificación, carrera</div>
             </a>
         </div>
 
         <div class="col-md-6 col-lg-4 mt-4">
-            <a class="card zg-action-card" href="/results">
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-5">
-                            <h1 class="text-center"><i class="fas fa-poll-h fa-2x"></i></h1>
-                        </div>
-
-                        <div class="col-7">
-                            <h3>Resultados</h3>
-                        </div>
-                    </div>
+            <a class="card zg-plate" href="/results">
+                <div class="zg-plate-row">
+                    <i class="fas fa-poll-h"></i>
+                    <span class="zg-plate-num">05</span>
                 </div>
+                <h3>Resultados</h3>
+                <div class="zg-plate-sub">Historial de sesiones</div>
             </a>
         </div>
-
 
         <div class="col-md-6 col-lg-4 mt-4">
-            <a class="card zg-action-card" href="/calendar">
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-5">
-                            <h1 class="text-center"><i class="fas fa-calendar-check fa-2x"></i></h1>
-                        </div>
-
-                        <div class="col-7">
-                            <h3>Calendario</h3>
-                        </div>
-                    </div>
+            <a class="card zg-plate" href="/calendar">
+                <div class="zg-plate-row">
+                    <i class="fas fa-calendar-check"></i>
+                    <span class="zg-plate-num">06</span>
                 </div>
+                <h3>Calendario</h3>
+                <div class="zg-plate-sub">Lo que viene</div>
             </a>
         </div>
-
     </div>
 
-    <h2 class="mt-4 zg-section-title">Contenido</h2>
+    <h2 class="zg-page-title mt-5" style="font-size: 2.1rem;">Contenido</h2>
+    <div class="zg-page-rule mb-4"></div>
 
     <div class="row">
-
         <div class="col-md-6 col-lg-4 mt-4">
-            <a class="card zg-action-card" href="/tracks">
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-5">
-                            <h1 class="text-center"><i class="fas fa-road fa-2x"></i></h1>
-                        </div>
-
-                        <div class="col-7">
-                            <h3>Circuitos</h3>
-                        </div>
-                    </div>
+            <a class="card zg-plate" href="/tracks">
+                <div class="zg-plate-row">
+                    <i class="fas fa-road"></i>
                 </div>
+                <h3>Circuitos</h3>
             </a>
         </div>
 
         <div class="col-md-6 col-lg-4 mt-4">
-            <a class="card zg-action-card" href="/cars">
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-5">
-                            <h1 class="text-center"><i class="fas fa-car fa-2x"></i></h1>
-                        </div>
-
-                        <div class="col-7">
-                            <h3>Autos y Setups</h3>
-                        </div>
-                    </div>
-
+            <a class="card zg-plate" href="/cars">
+                <div class="zg-plate-row">
+                    <i class="fas fa-car"></i>
                 </div>
+                <h3>Autos y Setups</h3>
             </a>
         </div>
 
         <div class="col-md-6 col-lg-4 mt-4">
-            <a class="card zg-action-card" href="/weather">
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-5">
-                            <h1 class="text-center"><i class="fas fa-cloud-moon fa-2x"></i></h1>
-                        </div>
-
-                        <div class="col-7">
-                            <h3>Clima</h3>
-                        </div>
-                    </div>
+            <a class="card zg-plate" href="/weather">
+                <div class="zg-plate-row">
+                    <i class="fas fa-cloud-moon"></i>
                 </div>
+                <h3>Clima</h3>
             </a>
         </div>
     </div>
 
     {{ if WriteAccess }}
-
-        <h2 class="mt-4 zg-section-title">Administración del Servidor</h2>
+        <h2 class="zg-page-title mt-5" style="font-size: 1.7rem; color: var(--zg-text-dim);">Administración del Servidor</h2>
+        <hr>
 
         <div class="row">
-
             {{ if AdminAccess }}
-                <div class="col-md-6 col-lg-4 mt-4">
-                    <a class="card zg-action-card" href="/server-options">
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-5">
-                                    <h1 class="text-center"><i class="fas fa-cog fa-2x"></i></h1>
-                                </div>
-
-                                <div class="col-7">
-                                    <h3>Opciones</h3>
-                                </div>
-                            </div>
-                        </div>
-                    </a>
+                <div class="col-md-6 col-lg-3 mt-2">
+                    <a class="btn btn-block text-left zg-btn-outline" href="/server-options"><i class="fas fa-cog mr-2"></i>Opciones</a>
                 </div>
             {{ end }}
-
 
             {{ if WriteAccess }}
-                <div class="col-md-6 col-lg-4 mt-4">
-                    <a class="card zg-action-card" href="/logs">
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-5">
-                                    <h1 class="text-center"><i class="fas fa-file-alt fa-2x"></i></h1>
-                                </div>
-
-                                <div class="col-7">
-                                    <h3>Registros</h3>
-                                </div>
-                            </div>
-                        </div>
-                    </a>
+                <div class="col-md-6 col-lg-3 mt-2">
+                    <a class="btn btn-block text-left zg-btn-outline" href="/logs"><i class="fas fa-file-alt mr-2"></i>Registros</a>
                 </div>
             {{ end }}
 
-
             {{ if AdminAccess }}
-                <div class="col-md-6 col-lg-4 mt-4">
-                    <a class="card zg-action-card" href="/accounts">
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-5">
-                                    <h1 class="text-center"><i class="fas fa-user fa-2x"></i></h1>
-                                </div>
-
-                                <div class="col-7">
-                                    <h3>Cuentas</h3>
-                                </div>
-                            </div>
-                        </div>
-                    </a>
+                <div class="col-md-6 col-lg-3 mt-2">
+                    <a class="btn btn-block text-left zg-btn-outline" href="/accounts"><i class="fas fa-user mr-2"></i>Cuentas</a>
                 </div>
 
-                <div class="col-md-6 col-lg-4 mt-4">
-                    <a class="card zg-action-card" href="/blacklist">
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-5">
-                                    <h1 class="text-center"><i class="fas fa-gavel fa-2x"></i></h1>
-                                </div>
-
-                                <div class="col-7">
-                                    <h3>Lista Negra</h3>
-                                </div>
-                            </div>
-                        </div>
-                    </a>
+                <div class="col-md-6 col-lg-3 mt-2">
+                    <a class="btn btn-block text-left zg-btn-outline" href="/blacklist"><i class="fas fa-gavel mr-2"></i>Lista Negra</a>
                 </div>
 
-                <div class="col-md-6 col-lg-4 mt-4">
-                    <a class="card zg-action-card" href="/motd">
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-5">
-                                    <h1 class="text-center"><i class="fas fa-comment-alt fa-2x"></i></h1>
-                                </div>
-
-                                <div class="col-7">
-                                    <h3>Mensajes</h3>
-                                </div>
-                            </div>
-                        </div>
-                    </a>
+                <div class="col-md-6 col-lg-3 mt-2">
+                    <a class="btn btn-block text-left zg-btn-outline" href="/motd"><i class="fas fa-comment-alt mr-2"></i>Mensajes</a>
                 </div>
 
-                <div class="col-md-6 col-lg-4 mt-4">
-                    <a class="card zg-action-card" href="/audit-logs">
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-5">
-                                    <h1 class="text-center"><i class="fas fa-clipboard-list fa-2x"></i></h1>
-                                </div>
-
-                                <div class="col-7">
-                                    <h3>Registros de Auditoría</h3>
-                                </div>
-                            </div>
-                        </div>
-                    </a>
+                <div class="col-md-6 col-lg-3 mt-2">
+                    <a class="btn btn-block text-left zg-btn-outline" href="/audit-logs"><i class="fas fa-clipboard-list mr-2"></i>Registros de Auditoría</a>
                 </div>
 
-                <div class="col-md-6 col-lg-4 mt-4">
-                    <a class="card zg-action-card" href="/stracker/options">
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-5">
-                                    <h1 class="text-center"><i class="fas fa-stopwatch fa-2x"></i></h1>
-                                </div>
-
-                                <div class="col-7">
-                                    <h3>STracker</h3>
-                                </div>
-                            </div>
-                        </div>
-                    </a>
+                <div class="col-md-6 col-lg-3 mt-2">
+                    <a class="btn btn-block text-left zg-btn-outline" href="/stracker/options"><i class="fas fa-stopwatch mr-2"></i>STracker</a>
                 </div>
 
-                <div class="col-md-6 col-lg-4 mt-4">
-                    <a class="card zg-action-card" href="/kissmyrank/options">
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-5">
-                                    <h1 class="text-center"><i class="fas fa-balance-scale fa-2x"></i></h1>
-                                </div>
-
-                                <div class="col-7">
-                                    <h3>KissMyRank</h3>
-                                </div>
-                            </div>
-                        </div>
-                    </a>
+                <div class="col-md-6 col-lg-3 mt-2">
+                    <a class="btn btn-block text-left zg-btn-outline" href="/kissmyrank/options"><i class="fas fa-balance-scale mr-2"></i>KissMyRank</a>
                 </div>
 
-                <div class="col-md-6 col-lg-4 mt-4">
-                    <a class="card zg-action-card" href="/realpenalty/options">
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-5">
-                                    <h1 class="text-center"><i class="fas fa-shield-alt fa-2x"></i></h1>
-                                </div>
-
-                                <div class="col-7">
-                                    <h3>Real Penalty</h3>
-                                </div>
-                            </div>
-                        </div>
-                    </a>
+                <div class="col-md-6 col-lg-3 mt-2">
+                    <a class="btn btn-block text-left zg-btn-outline" href="/realpenalty/options"><i class="fas fa-shield-alt mr-2"></i>Real Penalty</a>
                 </div>
 
-                <div class="col-md-6 col-lg-4 mt-4">
-                    <a class="card zg-action-card" href="/current-config">
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-5">
-                                    <h1 class="text-center"><i class="fas fa-scroll fa-2x"></i></h1>
-                                </div>
-
-                                <div class="col-7">
-                                    <h3>Configuración Actual</h3>
-                                </div>
-                            </div>
-                        </div>
-                    </a>
+                <div class="col-md-6 col-lg-3 mt-2">
+                    <a class="btn btn-block text-left zg-btn-outline" href="/current-config"><i class="fas fa-scroll mr-2"></i>Configuración Actual</a>
                 </div>
             {{ end }}
 
             {{ if DeleteAccess }}
-                <div class="col-md-6 col-lg-4 mt-4">
-                    <a class="card zg-action-card" href="/autofill-entrants">
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-5">
-                                    <h1 class="text-center"><i class="fas fa-users-cog fa-2x"></i></h1>
-                                </div>
-
-                                <div class="col-7">
-                                    <h3>Autocompletar Participantes</h3>
-                                </div>
-                            </div>
-                        </div>
-                    </a>
+                <div class="col-md-6 col-lg-3 mt-2">
+                    <a class="btn btn-block text-left zg-btn-outline" href="/autofill-entrants"><i class="fas fa-users-cog mr-2"></i>Autocompletar Participantes</a>
                 </div>
             {{ end }}
         </div>

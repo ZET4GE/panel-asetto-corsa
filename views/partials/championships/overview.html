@@ -1,4 +1,6 @@
 {{ define "championship-overview" }}
+    {{/* Reestilado 1b: la tabla y los colores de celda los sigue calculando Go
+         (classColor / StandingsForEntrantAtEvent). Solo cambia el chrome. */}}
 
     {{ $championship := .Championship }}
     {{ $account := .Account }}
@@ -6,17 +8,17 @@
     <div class="table-responsive entrant-table-max-height">
         <table class="table table-bordered table-striped">
             <tr>
-                <th>Pos</th>
+                <th style="width: 52px">Pos</th>
                 <th>Piloto</th>
                 {{ range $i, $event := $championship.Events }}
                     {{ if $event.IsRaceWeekend }}
-                        <th data-toggle="tooltip" title="{{ $event.RaceWeekend.Name }}">
+                        <th class="text-center" data-toggle="tooltip" title="{{ $event.RaceWeekend.Name }}">
                             {{ shortenTrackName $event.RaceWeekend.Name }}
                         </th>
                     {{ else }}
                         {{ $trackInfo := trackInfo $event.RaceSetup.Track $event.RaceSetup.TrackLayout }}
 
-                        <th data-toggle="tooltip" title="{{ with $trackInfo }}{{ $trackInfo.Name }}{{ else }}{{ prettify $event.RaceSetup.Track false }}{{ end }}">
+                        <th class="text-center" data-toggle="tooltip" title="{{ with $trackInfo }}{{ $trackInfo.Name }}{{ else }}{{ prettify $event.RaceSetup.Track false }}{{ end }}">
                             {{ with $trackInfo }}
                                 {{ shortenTrackName $trackInfo.Name }}
                             {{ else }}
@@ -25,7 +27,7 @@
                         </th>
                     {{ end }}
                 {{ end }}
-                <th>Puntos Totales</th>
+                <th class="text-right">Puntos Totales</th>
             </tr>
 
             {{ range $classIndex, $class := $championship.Classes }}
@@ -38,18 +40,18 @@
                         color: white; background: {{ classColor $classIndex }}
                     {{ end }}">
 
-                        <td>
+                        <td class="zg-num" style="font-size: 1.2rem;">
                             {{ add $i 1 }}
                         </td>
 
-                        <td data-toggle="tooltip" title="{{ driverName $entrant.Car.Driver.Name }}">
+                        <td class="font-weight-bold" data-toggle="tooltip" title="{{ driverName $entrant.Car.Driver.Name }}">
                             {{ driverInitials $entrant.Car.Driver.Name }}
                         </td>
 
                         {{ range $z, $event := $championship.Events }}
                             {{ $standingTableInfo := ($class.StandingsForEntrantAtEvent $championship $event $entrant) }}
 
-                            <td style="background-color: {{ $standingTableInfo.BackgroundColour }}; color: black;">
+                            <td class="text-center" style="background-color: {{ $standingTableInfo.BackgroundColour }}; color: black;">
 
                                 {{ if eq $standingTableInfo.ChampionshipStanding.Points 0.0 }}
                                     {{ $standingTableInfo.NoFinishReason }}
@@ -57,9 +59,9 @@
                                     {{ $standingTableInfo.ChampionshipStanding.Points }}
                                 {{ end }}
                             </td>
-                        {{ end  }}
+                        {{ end }}
 
-                        <td>
+                        <td class="text-right zg-num" style="font-size: 1.4rem;">
                             {{ $entrant.Points }}
                         </td>
 
@@ -68,13 +70,13 @@
             {{ end }}
         </table>
 
-        <div class="d-inline-block">
-            <span class="badge" style="background-color: #fefebe;">1ro</span>
-            <span class="badge" style="background-color: #dce0e1;">2do</span>
-            <span class="badge" style="background-color: #ffde9e;">3ro</span>
-            <span class="badge" style="background-color: #dffee0;">4to - 10mo</span>
-            <span class="badge" style="background-color: #d0ceff;">> 10mo</span>
-            <span class="badge" style="background-color: #ebcaff;">Sin Puntos</span>
+        <div class="d-inline-block mt-2">
+            <span class="badge" style="background-color: #fefebe; color: #05070c;">1ro</span>
+            <span class="badge" style="background-color: #dce0e1; color: #05070c;">2do</span>
+            <span class="badge" style="background-color: #ffde9e; color: #05070c;">3ro</span>
+            <span class="badge" style="background-color: #dffee0; color: #05070c;">4to - 10mo</span>
+            <span class="badge" style="background-color: #d0ceff; color: #05070c;">&gt; 10mo</span>
+            <span class="badge" style="background-color: #ebcaff; color: #05070c;">Sin Puntos</span>
         </div>
     </div>
 {{ end }}

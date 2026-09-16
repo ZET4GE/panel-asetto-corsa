@@ -1,74 +1,78 @@
 {{ define "title" }}Clima{{ end }}
 
 {{ define "content" }}
-    <h1 class="text-center">Clima</h1>
+    <div class="zg-subnav">
+        <a href="/tracks">Circuitos</a>
+        <a href="/cars">Autos y Setups</a>
+        <a href="/weather" class="active">Clima</a>
+    </div>
 
-    {{ if WriteAccess }}
-        <div class="card mb-3">
-            <div class="card-header"><strong>Subir un Preset de Clima Nuevo</strong></div>
-            <div class="card-body">
-                <p class="card-text">Podés subir varios presets de clima a la vez colocándolos en una carpeta llamada "weather" y subiendo
-                    toda la carpeta. El proceso de carga solo tomará los archivos que el servidor necesita, así que no debería
-                    demorar demasiado.</p>
+    <div class="zg-page-head">
+        <div class="d-flex align-items-end justify-content-between flex-wrap">
+            <div>
+                <div class="zg-page-eyebrow">Presets instalados</div>
+                <h1 class="zg-page-title">Clima</h1>
+            </div>
 
-                <p class="card-text ">Primero elegí la carpeta correcta de clima (o la carpeta que la contiene) usando el botón
-                    Elegir una Carpeta de abajo, y después usá el botón Subir Preset de Clima para cargar tus presets de clima si
-                    la información de vista previa aparece correctamente.</p>
-
-                <p class="card-text mb-0">La entrada de arrastrar y soltar acepta una sola carpeta de clima, varias carpetas de
-                    clima o una carpeta weather que contenga varios climas.</p>
-
-                <form class="d-inline">
-                    <div class="mt-3 mb-3">
-                        <div class="btn-file btn btn-secondary d-inline-block align-top">
-                            Elegir una Carpeta
+            {{ if WriteAccess }}
+                <div class="zg-page-actions">
+                    <form class="d-inline">
+                        <div class="btn-file btn zg-btn-outline d-inline-block align-top">
+                            <i class="fas fa-folder-open mr-1"></i> Elegir una Carpeta
                             <input id="input-folder-weather" name="input-folder-weather[]" type="file" multiple webkitdirectory value="Choose Folder"/>
                         </div>
 
-                        <div id="drop-zone" class="weather-drop ml-2 mr-2 drop-zone d-inline-block">O Arrastrá y Soltá Carpeta(s) Acá</div>
-
-                        <div id="upload-button"></div>
-                    </div>
-
-                    <div class="progress" style="display: none;">
-                        <div class="progress-bar" id="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
-                    </div>
-                </form>
-            </div>
+                        <div id="upload-button" class="d-inline-block"></div>
+                    </form>
+                </div>
+            {{ end }}
         </div>
 
+        <div class="zg-page-rule"></div>
+    </div>
+
+    {{ if WriteAccess }}
+        <form class="d-block mb-4">
+            <div id="drop-zone" class="weather-drop drop-zone">O Arrastrá y Soltá Carpeta(s) de Clima Acá</div>
+
+            <div class="progress mt-3" style="display: none;">
+                <div class="progress-bar" id="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+        </form>
 
         <div id="weather-info-panel"></div>
     {{ end }}
 
     {{ $writeAccess := WriteAccess }}
 
-    <table class="table table-bordered table-striped">
-        <tr>
-            <th>Clave del Clima</th>
-            <th>Nombre del Clima</th>
-
-            {{ if DeleteAccess }}
-                <th class="text-center">Eliminar</th>
-            {{ end }}
-        </tr>
-        {{ range $i, $weather := .Weathers }}
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped">
             <tr>
-                <td>
-                    {{ $i }}
-                </td>
-                <td>
-                    {{ $weather }}
-                </td>
+                <th style="width: 120px">Clave del Clima</th>
+                <th>Nombre del Clima</th>
 
                 {{ if DeleteAccess }}
-                    <td class="text-center">
-                        <a href="{{ print "/weather/delete/" $i }}"><i class="fas fa-trash fa text-danger"></i></a>
-                    </td>
+                    <th class="text-center" style="width: 90px">Eliminar</th>
                 {{ end }}
             </tr>
-        {{ end }}
-    </table>
+            {{ range $i, $weather := .Weathers }}
+                <tr>
+                    <td class="text-monospace">
+                        {{ $i }}
+                    </td>
+                    <td class="font-weight-bold">
+                        {{ $weather }}
+                    </td>
+
+                    {{ if DeleteAccess }}
+                        <td class="text-center">
+                            <a href="{{ print "/weather/delete/" $i }}"><i class="fas fa-trash fa text-danger"></i></a>
+                        </td>
+                    {{ end }}
+                </tr>
+            {{ end }}
+        </table>
+    </div>
 
     <div class="clearfix"></div>
 {{ end }}

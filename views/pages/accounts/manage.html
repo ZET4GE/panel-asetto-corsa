@@ -3,55 +3,90 @@
 {{ define "title" }}Administrar Cuentas{{ end }}
 
 {{ define "content" }}
-    <h1 class="text-center">Administrar Cuentas</h1>
+    <div class="zg-page-head">
+        <div class="d-flex align-items-end justify-content-between flex-wrap">
+            <div>
+                <div class="zg-page-eyebrow">Administración del servidor</div>
+                <h1 class="zg-page-title">Cuentas</h1>
+            </div>
 
-    <table class="table table-bordered table-striped">
-        <tr>
-            <th>#</th>
-            <th>Nombre</th>
-            <th>Grupo</th>
-            <th>Acciones</th>
-        </tr>
+            <div class="zg-page-actions">
+                <a class="btn btn-success" href="/accounts/new"><i class="fas fa-plus mr-1"></i> Agregar Cuenta</a>
+            </div>
+        </div>
 
-        {{ range $index, $account := .Accounts }}
-            <tr>
-                <td>{{ $index }}</td>
-                <td>{{ $account.Name }}</td>
-                <td>{{ $account.Group }}</td>
-                <td>
-                    {{ if ne $account.Name "admin" }}
-                        <a class="btn btn-warning" href="/accounts/edit/{{ $account.ID.String }}">
-                            Editar
-                        </a>
-                        {{ if ne $.BaseTemplateVars.User.ID.String $account.ID.String }}
-                            <a onClick="return confirm('Entiendo que esto va a eliminar esta cuenta permanentemente.') "
-                               class="btn btn-danger" href="/accounts/delete/{{ $account.ID.String }}">
-                                Eliminar
-                            </a>
-                        {{ end }}
-                    {{ end }}
-                </td>
-            </tr>
-        {{ end }}
-    </table>
-
-    <div class="mt-3">
-        <a class="btn btn-success float-right" href="/accounts/new">Agregar Cuenta</a>
+        <div class="zg-page-rule"></div>
     </div>
-    <div class="clearfix"></div>
 
+    <div class="row">
+        <div class="col-lg-3 mb-4">
+            <div class="list-group">
+                {{ if AdminAccess }}
+                    <a class="list-group-item" href="/server-options"><i class="fas fa-cog mr-2"></i>Opciones</a>
+                    <a class="list-group-item active" href="/accounts"><i class="fas fa-user mr-2"></i>Cuentas</a>
+                    <a class="list-group-item" href="/blacklist"><i class="fas fa-gavel mr-2"></i>Lista Negra</a>
+                    <a class="list-group-item" href="/motd"><i class="fas fa-comment-alt mr-2"></i>Mensajes</a>
+                    <a class="list-group-item" href="/audit-logs"><i class="fas fa-clipboard-list mr-2"></i>Registro de Auditoría</a>
+                    <a class="list-group-item" href="/stracker/options"><i class="fas fa-stopwatch mr-2"></i>STracker</a>
+                    <a class="list-group-item" href="/kissmyrank/options"><i class="fas fa-balance-scale mr-2"></i>KissMyRank</a>
+                    <a class="list-group-item" href="/realpenalty/options"><i class="fas fa-shield-alt mr-2"></i>Real Penalty</a>
+                    <a class="list-group-item" href="/current-config"><i class="fas fa-scroll mr-2"></i>Configuración Actual</a>
+                {{ end }}
+                {{ if DeleteAccess }}
+                    <a class="list-group-item" href="/autofill-entrants"><i class="fas fa-users-cog mr-2"></i>Autocompletar Participantes</a>
+                {{ end }}
+                <a class="list-group-item" href="/logs"><i class="fas fa-file-alt mr-2"></i>Registros</a>
+            </div>
+        </div>
 
-    <h2>Server Manager Abierto</h2>
+        <div class="col-lg-9">
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped">
+                    <tr>
+                        <th style="width: 52px">#</th>
+                        <th>Nombre</th>
+                        <th>Grupo</th>
+                        <th class="text-right">Acciones</th>
+                    </tr>
 
-    <p>Un Server Manager Abierto permite acceso de lectura a cualquiera sin necesidad de una cuenta.</p>
+                    {{ range $index, $account := .Accounts }}
+                        <tr>
+                            <td class="text-monospace">{{ $index }}</td>
+                            <td class="font-weight-bold">{{ $account.Name }}</td>
+                            <td><span class="badge badge-secondary">{{ $account.Group }}</span></td>
+                            <td class="text-right">
+                                {{ if ne $account.Name "admin" }}
+                                    <a class="btn btn-sm zg-btn-outline" href="/accounts/edit/{{ $account.ID.String }}">
+                                        Editar
+                                    </a>
+                                    {{ if ne $.BaseTemplateVars.User.ID.String $account.ID.String }}
+                                        <a onClick="return confirm('Entiendo que esto va a eliminar esta cuenta permanentemente.') "
+                                           class="btn btn-sm btn-danger" href="/accounts/delete/{{ $account.ID.String }}">
+                                            Eliminar
+                                        </a>
+                                    {{ end }}
+                                {{ end }}
+                            </td>
+                        </tr>
+                    {{ end }}
+                </table>
+            </div>
 
-    {{ if $.ServerReadIsOpen }}
-        <p class="d-inline-block mr-5 text-success">Server Manager está actualmente abierto.</p>
+            <div class="zg-row-card mt-4">
+                <div class="zg-row-card-title" style="font-size: 1.4rem;">Server Manager Abierto</div>
 
-        <a href="/accounts/toggle-open" class="btn btn-danger d-inline-block">Cerrar</a>
-    {{ else }}
-        <p class="d-inline-block mr-5 text-danger">Server Manager actualmente no está abierto.</p>
+                <p class="zg-page-lead">Un Server Manager Abierto permite acceso de lectura a cualquiera sin necesidad de una cuenta.</p>
 
-        <a href="/accounts/toggle-open" class="btn btn-success d-inline-block">Abrir</a>
-    {{ end }}
+                {{ if $.ServerReadIsOpen }}
+                    <p class="d-inline-block mr-4 mb-0"><span class="zg-server-state"><span class="zg-server-dot" aria-hidden="true"></span>Actualmente abierto</span></p>
+
+                    <a href="/accounts/toggle-open" class="btn btn-sm btn-danger">Cerrar</a>
+                {{ else }}
+                    <p class="d-inline-block mr-4 mb-0" style="color: var(--zg-text-dim)">Actualmente cerrado</p>
+
+                    <a href="/accounts/toggle-open" class="btn btn-sm btn-success">Abrir</a>
+                {{ end }}
+            </div>
+        </div>
+    </div>
 {{ end }}

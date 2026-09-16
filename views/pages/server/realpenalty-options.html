@@ -1,54 +1,92 @@
 {{/* gotype: github.com/JustaPenguin/assetto-server-manager.realPenaltyConfigurationTemplateVars */}}
+{{/* Reestilado 1b. {{ $.Form }} lo sigue generando Go. */}}
 
 {{ define "title" }}Opciones de Real Penalty{{ end }}
 
 {{ define "content" }}
-    <h1 class="text-center">Opciones de Real Penalty</h1>
-
-    <p>
-        <a href="https://www.racedepartment.com/downloads/real-penalty-tool.29591/">Real Penalty</a> es la popular app del lado del servidor
-        diseñada para administrar penalizaciones personalizadas en carreras organizadas.<br><br>
-
-        <em>Real Penalty no es desarrollado ni mantenido por {{ if $.IsHosted }}Emperor Servers{{ else }}los autores de Server Manager{{ end }}.
-        Si tenés preguntas sobre el funcionamiento de la herramienta Real Penalty en sí, por favor preguntá en el
-            <a href="https://www.racedepartment.com/threads/real-penalty-tool.175214/">hilo de soporte de Real Penalty</a>.</em>
-    </p>
-
-    {{ if .IsRealPenaltyInstalled }}
-        <p>
-            Estas opciones de configuración se aplican globalmente: se aplican a los archivos de configuración de Real Penalty
-            cada vez que Server Manager inicia una configuración de carrera.
+    <div class="zg-page-head">
+        <div class="zg-page-eyebrow">Plugin del servidor</div>
+        <h1 class="zg-page-title">Real Penalty</h1>
+        <p class="zg-page-lead">
+            <a href="https://www.racedepartment.com/downloads/real-penalty-tool.29591/">Real Penalty</a> es la popular
+            app del lado del servidor diseñada para administrar penalizaciones personalizadas en carreras organizadas.
         </p>
+        <div class="zg-page-rule"></div>
+    </div>
 
-        <form method="post" action="/realpenalty/options">
-            {{ $.Form }}
+    <div class="row">
+        <div class="col-lg-3 mb-4">
+            <div class="list-group">
+                {{ if AdminAccess }}
+                    <a class="list-group-item" href="/server-options"><i class="fas fa-cog mr-2"></i>Opciones</a>
+                    <a class="list-group-item" href="/accounts"><i class="fas fa-user mr-2"></i>Cuentas</a>
+                    <a class="list-group-item" href="/blacklist"><i class="fas fa-gavel mr-2"></i>Lista Negra</a>
+                    <a class="list-group-item" href="/motd"><i class="fas fa-comment-alt mr-2"></i>Mensajes</a>
+                    <a class="list-group-item" href="/audit-logs"><i class="fas fa-clipboard-list mr-2"></i>Registro de Auditoría</a>
+                    <a class="list-group-item" href="/stracker/options"><i class="fas fa-stopwatch mr-2"></i>STracker</a>
+                    <a class="list-group-item" href="/kissmyrank/options"><i class="fas fa-balance-scale mr-2"></i>KissMyRank</a>
+                    <a class="list-group-item active" href="/realpenalty/options"><i class="fas fa-shield-alt mr-2"></i>Real Penalty</a>
+                    <a class="list-group-item" href="/current-config"><i class="fas fa-scroll mr-2"></i>Configuración Actual</a>
+                {{ end }}
+                {{ if DeleteAccess }}
+                    <a class="list-group-item" href="/autofill-entrants"><i class="fas fa-users-cog mr-2"></i>Autocompletar Participantes</a>
+                {{ end }}
+                <a class="list-group-item" href="/logs"><i class="fas fa-file-alt mr-2"></i>Registros</a>
+            </div>
+        </div>
 
-            <button class="btn btn-success float-right" type="submit">Guardar</button>
+        <div class="col-lg-9">
+            <p class="zg-page-lead">
+                <em>Real Penalty no es desarrollado ni mantenido por {{ if $.IsHosted }}Emperor Servers{{ else }}los autores de Server Manager{{ end }}.
+                Si tenés preguntas sobre el funcionamiento de la herramienta Real Penalty en sí, por favor preguntá en el
+                <a href="https://www.racedepartment.com/threads/real-penalty-tool.175214/">hilo de soporte de Real Penalty</a>.</em>
+            </p>
 
-            <div class="clearfix"></div>
+            {{ if .IsRealPenaltyInstalled }}
+                <form method="post" action="/realpenalty/options">
+                    <div class="card mb-4">
+                        <div class="card-header"><strong>Configuración de Real Penalty</strong></div>
+                        <div class="card-body">
+                            <p class="zg-page-lead">
+                                Estas opciones se aplican globalmente: se aplican a los archivos de configuración de
+                                Real Penalty cada vez que Server Manager inicia una configuración de carrera.
+                            </p>
 
-            <hr>
+                            {{ $.Form }}
 
-            <h3>Descargar Registros</h3>
+                            <button class="btn btn-success float-right" type="submit"><i class="fas fa-save mr-1"></i> Guardar</button>
 
-            <p>Acá podés descargar todos tus registros de Real Penalty en formato zip.</p>
+                            <div class="clearfix"></div>
+                        </div>
+                    </div>
 
-            <a class="btn btn-info" href="/realpenalty/logs">Descargar Registros</a>
-        </form>
-    {{ else }}
-        <p>Real Penalty no está instalado. Seguí las instrucciones de abajo para instalarlo, o contactá a tu Administrador del Servidor:</p>
+                    <div class="zg-row-card">
+                        <div class="zg-row-card-title" style="font-size: 1.3rem;">Descargar registros</div>
+                        <p class="zg-page-lead">Acá podés descargar todos tus registros de Real Penalty en formato zip.</p>
 
-        <ol>
-            <li><a href="https://www.racedepartment.com/downloads/real-penalty-tool.29591/history">Descargar Real Penalty {{ $.RealPenaltySupportedVersion }}</a></li>
-            <li>Extraé <code>Real Penalty {{ $.RealPenaltySupportedVersion }}.zip</code></li>
-            <li>Renombrá la carpeta extraída a <code>realpenalty</code></li>
-            <li>Movela dentro de tu carpeta <code>assetto</code>. Si usás multiserver, copiala dentro de cada uno. Por ejemplo, dentro de <code>youracserver/servers/SERVER_00/assetto/</code></li>
-            <li>Asegurate de haber configurado la Dirección del Plugin UDP y el Puerto Local del Plugin UDP en <a href="/server-options">Opciones del Servidor</a></li>
-            <li>¡Actualizá esta página!</li>
-        </ol>
+                        <a class="btn zg-btn-outline" href="/realpenalty/logs"><i class="fas fa-download mr-1"></i> Descargar Registros</a>
+                    </div>
+                </form>
+            {{ else }}
+                <div class="zg-row-card">
+                    <div class="zg-row-card-title" style="font-size: 1.3rem;">Real Penalty no está instalado</div>
 
-        <p>Nota: se sabe que estas instrucciones y la integración provista son compatibles con la versión <code>{{ $.RealPenaltySupportedVersion }}</code> de Real Penalty.
-        Es posible que otras versiones también funcionen. Si tenés problemas con una versión más reciente que esta,
-        por favor <a href="https://github.com/JustaPenguin/assetto-server-manager/issues">reportá un issue</a>.</p>
-    {{ end }}
+                    <p class="zg-page-lead">Seguí estos pasos para instalarlo, o contactá a tu Administrador del Servidor:</p>
+
+                    <ol class="zg-page-lead">
+                        <li><a href="https://www.racedepartment.com/downloads/real-penalty-tool.29591/history">Descargar Real Penalty {{ $.RealPenaltySupportedVersion }}</a></li>
+                        <li>Extraé <code>Real Penalty {{ $.RealPenaltySupportedVersion }}.zip</code></li>
+                        <li>Renombrá la carpeta extraída a <code>realpenalty</code></li>
+                        <li>Movela dentro de tu carpeta <code>assetto</code>. Si usás multiserver, copiala dentro de cada uno. Por ejemplo, dentro de <code>youracserver/servers/SERVER_00/assetto/</code></li>
+                        <li>Asegurate de haber configurado la Dirección del Plugin UDP y el Puerto Local del Plugin UDP en <a href="/server-options">Opciones del Servidor</a></li>
+                        <li>¡Actualizá esta página!</li>
+                    </ol>
+
+                    <p class="zg-page-lead mb-0">Nota: se sabe que estas instrucciones y la integración provista son compatibles con la versión <code>{{ $.RealPenaltySupportedVersion }}</code> de Real Penalty.
+                    Es posible que otras versiones también funcionen. Si tenés problemas con una versión más reciente que esta,
+                    por favor <a href="https://github.com/JustaPenguin/assetto-server-manager/issues">reportá un issue</a>.</p>
+                </div>
+            {{ end }}
+        </div>
+    </div>
 {{ end }}

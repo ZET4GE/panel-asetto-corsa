@@ -1,23 +1,28 @@
 {{/* gotype: github.com/JustaPenguin/assetto-server-manager.championshipSignUpFormTemplateVars */}}
+{{/* Reestilado 1b: cambia el encabezado y el chrome de las cards. Intactos
+     #championship-signup-form, .acsrGUID, #Car/#Skin (.entryListCar/.entryListSkin),
+     #CarPreview, #acsr-rating-container, #register-for-championship, recaptcha. */}}
 
 {{ define "title" }}{{ $.Championship.Name }}{{ end }}
 
 {{ define "content" }}
     {{ $championship := $.Championship }}
-    <h1 class="text-center">
-        {{ $championship.Name }}
-    </h1>
 
-    {{ if $championship.ACSR }}
-        <div class="text-center">
-            <em>
-                Un Campeonato de <a href="https://acsr.assettocorsaservers.com">Assetto Corsa Skill Rating</a>
-            </em>
-        </div>
-    {{ end }}
+    <div class="zg-page-head">
+        <div class="zg-page-eyebrow">Inscripción</div>
+        <h1 class="zg-page-title">{{ $championship.Name }}</h1>
+
+        {{ if $championship.ACSR }}
+            <p class="zg-page-lead">
+                <em>Un Campeonato de <a href="https://acsr.assettocorsaservers.com">Assetto Corsa Skill Rating</a></em>
+            </p>
+        {{ end }}
+
+        <div class="zg-page-rule"></div>
+    </div>
 
     {{ with $championship.Info }}
-        <div class="card mt-3 border-secondary">
+        <div class="card mb-3">
             <div class="card-header">
                 <strong>Sobre el Campeonato</strong>
             </div>
@@ -32,7 +37,7 @@
 
     <form action="/championship/{{ $championship.ID.String }}/sign-up" method="post" id="championship-signup-form" data-safe-submit>
 
-        <div class="card mt-3 border-secondary">
+        <div class="card mt-3">
             <div class="card-header">
                 <strong>Tus Datos</strong>
             </div>
@@ -71,7 +76,7 @@
                     <label for="GUID" class="col-sm-4 col-form-label">Steam GUID</label>
 
                     <div class="col-sm-8">
-                        <input type="text" class="form-control acsrGUID" id="GUID" name="GUID"
+                        <input type="text" class="form-control text-monospace acsrGUID" id="GUID" name="GUID"
                                placeholder="" value="{{ .FormData.GUID }}" {{ if .LockSteamGUID }} readonly{{ end }}>
                         {{ if not .LockSteamGUID }}
                             <small>
@@ -105,7 +110,7 @@
         </div>
 
         {{ if not $championship.SignUpForm.HideCarChoice }}
-            <div class="card mt-3 border-secondary" id="entrants">
+            <div class="card mt-3" id="entrants">
                 <div class="card-header">
                     <strong>Tu Auto</strong>
                 </div>
@@ -149,13 +154,13 @@
         {{ end }}
 
         {{ if gt (len $championship.SignUpForm.ExtraFields) 0 }}
-            <div class="card mt-3 border-secondary" id="entrants">
+            <div class="card mt-3" id="entrants">
                 <div class="card-header">
                     <strong>Información Extra</strong>
                 </div>
 
                 <div class="card-body">
-                    <p>Los organizadores del campeonato también pidieron la siguiente información.</p>
+                    <p class="zg-page-lead">Los organizadores del campeonato también pidieron la siguiente información.</p>
 
                     {{ range $index, $question := $championship.SignUpForm.ExtraFields }}
                         <div class="form-group row">
@@ -178,20 +183,20 @@
                     <strong>Campeonato de Assetto Corsa Skill Rating</strong>
                 </div>
                 <div class="card-body">
-                    <p>
+                    <p class="zg-page-lead">
                         Este es un Campeonato de <a target="_blanK" href="https://acsr.assettocorsaservers.com">ACSR</a>.
                         Eso significa que cuando te inscribas en este Campeonato, se van a enviar los siguientes datos a ACSR:
                     </p>
-                    <ul>
+                    <ul class="zg-page-lead">
                         <li>Tu Nombre, tal como lo pusiste en el formulario de arriba (anonimizado si es posible, por ejemplo "Alan Turing" pasaría a ser "Alan T.")</li>
                         <li>Una versión anonimizada de tu Steam GUID</li>
                         <li>Todos los resultados de Carrera, Clasificación y Práctica, y las Posiciones del Campeonato</li>
                     </ul>
 
-                    <p>Al inscribirte en este Campeonato, aceptás que estos datos puedan compartirse con ACSR.</p>
+                    <p class="zg-page-lead">Al inscribirte en este Campeonato, aceptás que estos datos puedan compartirse con ACSR.</p>
 
                     {{ if or $championship.EnableACSRSkillGate $championship.EnableACSRSafetyGate }}
-                        <p>Necesitás cumplir con las siguientes calificaciones mínimas de ACSR para unirte a este Campeonato:</p>
+                        <p class="zg-page-lead">Necesitás cumplir con las siguientes calificaciones mínimas de ACSR para unirte a este Campeonato:</p>
 
                         {{ if $championship.EnableACSRSkillGate }}
                             <span data-toggle="tooltip" title="Habilidad" class="badge badge-primary acsr-badge--skill">{{ $championship.ACSRSkillGate }}</span>
@@ -200,7 +205,7 @@
                             <span data-toggle="tooltip" title="Seguridad" class="badge badge-success acsr-badge--safety">{{ $championship.ACSRSafetyGate }} </span>
                         {{ end }}
 
-                        <div class="mt-3 mb-3">Tu Calificación:</div>
+                        <div class="zg-stat-label mt-4 mb-2">Tu calificación</div>
 
                         <div id="acsr-rating-container">
                             <!-- Rating information is appended by JS! -->
@@ -217,6 +222,7 @@
                         disabled id="register-for-championship"
                     {{ end }}
                     class="btn btn-success float-right">Registrarme</button>
+            <div class="clearfix"></div>
         </div>
     </form>
 

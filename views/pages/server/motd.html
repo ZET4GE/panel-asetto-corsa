@@ -1,46 +1,85 @@
 {{/* gotype: github.com/JustaPenguin/assetto-server-manager.motdTemplateVars */}}
+{{/* Reestilado 1b. Se conservan #motd, #serverJoinMessage,
+     #contentManagerWelcomeMessage y #ContentManagerMessageContent (el JS los usa
+     para el editor enriquecido). */}}
 
 {{ define "title" }}Mensajes{{ end }}
 
 {{ define "content" }}
-    <h1 class="text-center">Mensajes</h1>
-
-    <form method="post" action="/motd">
-        <div class="mb-3">
-            <h3>MOTD</h3>
-
-            <label for="motd">Mensaje del día. Assetto Corsa lo muestra en una ventana emergente de pantalla completa a todos los que entren al servidor.</label>
-            <textarea id="motd" name="motd" class="form-control md-textarea text-area">{{ .MOTDText }}</textarea>
+    <div class="zg-page-head">
+        <div class="d-flex align-items-end justify-content-between flex-wrap">
+            <div>
+                <div class="zg-page-eyebrow">Administración del servidor</div>
+                <h1 class="zg-page-title">Mensajes</h1>
+            </div>
         </div>
 
-        <div class="mb-3">
-            <h3>Mensaje de Ingreso al Servidor</h3>
+        <div class="zg-page-rule"></div>
+    </div>
 
-            <label for="serverJoinMessage">Se muestra en el chat a cada usuario cuando entra al servidor.</label>
-            <textarea id="serverJoinMessage" name="serverJoinMessage" class="form-control md-textarea text-area">{{ $.Opts.ServerJoinMessage }}</textarea>
+    <div class="row">
+        <div class="col-lg-3 mb-4">
+            <div class="list-group">
+                {{ if AdminAccess }}
+                    <a class="list-group-item" href="/server-options"><i class="fas fa-cog mr-2"></i>Opciones</a>
+                    <a class="list-group-item" href="/accounts"><i class="fas fa-user mr-2"></i>Cuentas</a>
+                    <a class="list-group-item" href="/blacklist"><i class="fas fa-gavel mr-2"></i>Lista Negra</a>
+                    <a class="list-group-item active" href="/motd"><i class="fas fa-comment-alt mr-2"></i>Mensajes</a>
+                    <a class="list-group-item" href="/audit-logs"><i class="fas fa-clipboard-list mr-2"></i>Registro de Auditoría</a>
+                    <a class="list-group-item" href="/stracker/options"><i class="fas fa-stopwatch mr-2"></i>STracker</a>
+                    <a class="list-group-item" href="/kissmyrank/options"><i class="fas fa-balance-scale mr-2"></i>KissMyRank</a>
+                    <a class="list-group-item" href="/realpenalty/options"><i class="fas fa-shield-alt mr-2"></i>Real Penalty</a>
+                    <a class="list-group-item" href="/current-config"><i class="fas fa-scroll mr-2"></i>Configuración Actual</a>
+                {{ end }}
+                {{ if DeleteAccess }}
+                    <a class="list-group-item" href="/autofill-entrants"><i class="fas fa-users-cog mr-2"></i>Autocompletar Participantes</a>
+                {{ end }}
+                <a class="list-group-item" href="/logs"><i class="fas fa-file-alt mr-2"></i>Registros</a>
+            </div>
         </div>
 
-        <div class="mb-3">
-            <h3>Mensaje de Bienvenida de Content Manager</h3>
+        <div class="col-lg-9">
+            <form method="post" action="/motd">
+                <div class="card mb-4">
+                    <div class="card-header"><strong>MOTD</strong></div>
+                    <div class="card-body">
+                        <label for="motd">Mensaje del día. Assetto Corsa lo muestra en una ventana emergente de pantalla completa a todos los que entren al servidor.</label>
+                        <textarea id="motd" name="motd" class="form-control md-textarea text-area">{{ .MOTDText }}</textarea>
+                    </div>
+                </div>
 
-            {{ if and $.Opts.EnableContentManagerWrapper (gt $.Opts.ContentManagerWrapperPort 0) }}
-                <div class="d-none" id="ContentManagerMessageContent">{{ trustHTML $.Opts.ContentManagerWelcomeMessage }}</div>
+                <div class="card mb-4">
+                    <div class="card-header"><strong>Mensaje de Ingreso al Servidor</strong></div>
+                    <div class="card-body">
+                        <label for="serverJoinMessage">Se muestra en el chat a cada usuario cuando entra al servidor.</label>
+                        <textarea id="serverJoinMessage" name="serverJoinMessage" class="form-control md-textarea text-area">{{ $.Opts.ServerJoinMessage }}</textarea>
+                    </div>
+                </div>
 
-                <label for="contentManagerWelcomeMessage">
-                    Se muestra a los usuarios de Content Manager antes de que entren al servidor.
+                <div class="card mb-4">
+                    <div class="card-header"><strong>Mensaje de Bienvenida de Content Manager</strong></div>
+                    <div class="card-body">
+                        {{ if and $.Opts.EnableContentManagerWrapper (gt $.Opts.ContentManagerWrapperPort 0) }}
+                            <div class="d-none" id="ContentManagerMessageContent">{{ trustHTML $.Opts.ContentManagerWelcomeMessage }}</div>
 
-                    Este campo es una plantilla, en la que podés acceder a datos sobre tu manager/el evento actual.
-                    Podés escribir lo que quieras acá. Si ponés <code>&lbrace;&lbrace; .ServerName &rbrace;&rbrace;</code>, se va a reemplazar por el Nombre del Servidor.
-                    Si ponés <code>&lbrace;&lbrace; .EventName &rbrace;&rbrace;</code>, se va a reemplazar por el Nombre del Evento.
-                    ¡Podés <a href='https://github.com/JustaPenguin/assetto-server-manager/wiki/Content-Manager-Description-Templates'>ver algunos ejemplos</a> en la Wiki de Server Manager!
-                </label><br>
-                <textarea id="contentManagerWelcomeMessage" name="contentManagerWelcomeMessage"></textarea>
-            {{ else }}
-                Habilitá el Content Manager Wrapper en <a href="/server-options">Opciones del Servidor</a> para mostrar este mensaje.
-            {{ end }}
+                            <label for="contentManagerWelcomeMessage">
+                                Se muestra a los usuarios de Content Manager antes de que entren al servidor.
+
+                                Este campo es una plantilla, en la que podés acceder a datos sobre tu manager/el evento actual.
+                                Podés escribir lo que quieras acá. Si ponés <code>&lbrace;&lbrace; .ServerName &rbrace;&rbrace;</code>, se va a reemplazar por el Nombre del Servidor.
+                                Si ponés <code>&lbrace;&lbrace; .EventName &rbrace;&rbrace;</code>, se va a reemplazar por el Nombre del Evento.
+                                ¡Podés <a href='https://github.com/JustaPenguin/assetto-server-manager/wiki/Content-Manager-Description-Templates'>ver algunos ejemplos</a> en la Wiki de Server Manager!
+                            </label><br>
+                            <textarea id="contentManagerWelcomeMessage" name="contentManagerWelcomeMessage"></textarea>
+                        {{ else }}
+                            <p class="zg-page-lead mb-0">Habilitá el Content Manager Wrapper en <a href="/server-options">Opciones del Servidor</a> para mostrar este mensaje.</p>
+                        {{ end }}
+                    </div>
+                </div>
+
+                <button class="btn btn-success float-right" type="submit"><i class="fas fa-save mr-1"></i> Guardar</button>
+                <div class="clearfix"></div>
+            </form>
         </div>
-
-
-        <button class="btn btn-success float-right mt-2" type="submit">Guardar</button>
-    </form>
+    </div>
 {{ end }}

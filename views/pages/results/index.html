@@ -3,59 +3,61 @@
 {{ define "title" }}Resultados{{ end }}
 
 {{ define "content" }}
-    <div class="row">
-        <div class="col-md-4">
+    <div class="zg-page-head">
+        <div class="d-flex align-items-end justify-content-between flex-wrap">
+            <div>
+                <div class="zg-page-eyebrow">Archivo de sesiones</div>
+                <h1 class="zg-page-title">Resultados</h1>
+            </div>
+
             {{ if WriteAccess }}
-                <a href="/results/combine" class="btn btn-primary">Combinar Resultados</a>
+                <div class="zg-page-actions">
+                    <a href="/results/combine" class="btn btn-primary"><i class="fas fa-layer-group mr-1"></i> Combinar Resultados</a>
+
+                    <form class="form-inline" method="post" action="/results/upload" enctype="multipart/form-data">
+                        <div class="custom-file">
+                            <input onchange="this.form.submit();" type="file" class="custom-file-input" accept=".json, application/json" id="resultsFile" name="resultsFile" required>
+                            <label class="custom-file-label justify-content-start" for="resultsFile">Subir Archivo de Resultados</label>
+                        </div>
+                    </form>
+                </div>
             {{ end }}
         </div>
 
-        <div class="col-md-4">
-            <h1 class="text-center">Resultados</h1>
-        </div>
-
-        <div class="col-md-4">
-            {{ if WriteAccess }}
-                <form class="form-inline" method="post" action="/results/upload" enctype="multipart/form-data">
-                    <div class="custom-file">
-                        <input onchange="this.form.submit();" type="file" class="custom-file-input" accept=".json, application/json" id="resultsFile" name="resultsFile" required>
-                        <label class="custom-file-label justify-content-start" for="resultsFile">Subir Archivo de Resultados</label>
-                    </div>
-                </form>
-            {{ end }}
-        </div>
-
+        <div class="zg-page-rule"></div>
     </div>
 
-    <table class="table table-bordered table-striped">
-        <tr>
-            <th>Fecha</th>
-            <th>Tipo de Sesión</th>
-            <th>Nombre del Circuito</th>
-            <th style="width: 50%">Participantes</th>
-        </tr>
-        {{ range $i, $result := .Results }}
-            <tr class="row-link" data-href="/results/{{ $result.SessionFile }}">
-                <td>
-                    {{ $result.GetDate }}
-                </td>
-                <td>
-                    {{ if $result.IsTimeAttack }}
-                        Contrarreloj
-                    {{ else }}
-                        {{ $result.Type }}
-                    {{ end }}
-                </td>
-                <td>
-                    {{ prettify $result.TrackName false }}
-                </td>
-
-                <td>
-                    <small>{{ $result.GetDrivers }}</small>
-                </td>
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped table-hover">
+            <tr>
+                <th style="width: 190px">Fecha</th>
+                <th style="width: 150px">Tipo de Sesión</th>
+                <th>Nombre del Circuito</th>
+                <th style="width: 46%">Participantes</th>
             </tr>
-        {{ end }}
-    </table>
+            {{ range $i, $result := .Results }}
+                <tr class="row-link" data-href="/results/{{ $result.SessionFile }}">
+                    <td class="text-monospace">
+                        {{ $result.GetDate }}
+                    </td>
+                    <td>
+                        {{ if $result.IsTimeAttack }}
+                            <span class="badge badge-secondary">Contrarreloj</span>
+                        {{ else }}
+                            <span class="badge badge-primary">{{ $result.Type }}</span>
+                        {{ end }}
+                    </td>
+                    <td class="zg-row-card-title" style="font-size: 1.2rem;">
+                        {{ prettify $result.TrackName false }}
+                    </td>
+
+                    <td>
+                        <small>{{ $result.GetDrivers }}</small>
+                    </td>
+                </tr>
+            {{ end }}
+        </table>
+    </div>
 
     <div class="clearfix"></div>
 

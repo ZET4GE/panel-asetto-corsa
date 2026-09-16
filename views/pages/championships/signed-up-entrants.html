@@ -1,155 +1,156 @@
 {{/* gotype: github.com/JustaPenguin/assetto-server-manager.signedUpEntrantsTemplateVars*/}}
+{{/* Reestilado 1b. Se conservan .popover-external-html, #answers-<guid>,
+     #popover-content-answers-<guid>, .popover-signup-answers y los dropdowns. */}}
 
 {{ define "title" }}Participantes de {{ $.Championship.Name }}{{ end }}
 
 {{ define "content" }}
-    <h1 class="text-center">
-        Participantes de {{ $.Championship.Name }}
-    </h1>
-
     {{ with .Championship }}
         {{ $championship := .}}
 
-        <div class="float-left">
-            <a class="btn btn-primary" href="/championship/{{ $championship.ID.String }}">Volver al Campeonato</a>
-        </div>
+        <div class="zg-page-head">
+            <a class="zg-page-eyebrow d-inline-block" href="/championship/{{ $championship.ID.String }}"><i class="fas fa-caret-left mr-1"></i> Volver al campeonato</a>
 
-        <div class="float-right mb-5">
-            {{ if $championship.SignUpForm.AskForEmail }}
-                <div class="dropdown show" style="display: inline-block">
-                    <a class="btn btn-success dropdown-toggle" href="#" role="button" id="dropdownEmailEntrants" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                       Enviar Email a Participantes
-                    </a>
-
-                    <div class="dropdown-menu" aria-labelledby="dropdownEmailEntrants">
-                        <a class="dropdown-item" href="mailto:?bcc={{ $championship.SignUpForm.EmailList "all" }}&subject={{ $championship.Name }}">
-                            Todos los Participantes
-                        </a>
-                        <a class="dropdown-item" href="mailto:?bcc={{ $championship.SignUpForm.EmailList "accepted" }}&subject={{ $championship.Name }}">
-                            Participantes Aceptados
-                        </a>
-                        <a class="dropdown-item" href="mailto:?bcc={{ $championship.SignUpForm.EmailList "rejected" }}&subject={{ $championship.Name }}">
-                            Participantes Rechazados
-                        </a>
-                        <a class="dropdown-item" href="mailto:?bcc={{ $championship.SignUpForm.EmailList "pending" }}&subject={{ $championship.Name }}">
-                            Participantes Pendientes
-                        </a>
-                    </div>
+            <div class="d-flex align-items-end justify-content-between flex-wrap">
+                <div>
+                    <div class="zg-page-eyebrow">{{ $championship.Name }}</div>
+                    <h1 class="zg-page-title">Participantes</h1>
                 </div>
-            {{ end }}
 
-            <a class="btn btn-primary" href="/championship/{{ $championship.ID.String }}/entrants.csv">Exportar CSV</a>
-        </div>
-
-        <div class="clearfix"></div>
-
-        <table class="table table-bordered table-striped">
-            <tr>
-                <th>Creado</th>
-                <th>Nombre</th>
-                {{ with $.DriverRatings }}
-                    <th>Calificación</th>
-                {{ end }}
-                {{ if $championship.SignUpForm.AskForTeam }}
-                    <th>Equipo</th>
-                {{ end }}
-                <th>GUID</th>
-                {{ if $championship.SignUpForm.AskForEmail }}
-                    <th>Email</th>
-                {{ end }}
-                {{ if not $championship.SignUpForm.HideCarChoice }}
-                    <th>Auto / Skin</th>
-                {{ end }}
-                <th>Estado</th>
-
-                <th>Acciones</th>
-            </tr>
-
-            {{ range $index, $entrant := .SignUpForm.Responses }}
-                <tr>
-                    <td>
-                        {{ timeFormat $entrant.Created }} el {{ dateFormat $entrant.Created }}
-                    </td>
-                    <td>
-                        {{ $entrant.Name }}
-                    </td>
-                    {{ with $.DriverRatings }}
-                        <td>
-                            {{ template "acsr-rating" dict "DriverRatings" $.DriverRatings "GUID" $entrant.GUID }}
-                        </td>
-                    {{ end }}
-                    {{ if $championship.SignUpForm.AskForTeam }}
-                        <td>
-                            {{ $entrant.Team }}
-                        </td>
-                    {{ end }}
-                    <td>
-                        <small><code>{{ $entrant.GUID }}</code></small>
-                    </td>
+                <div class="zg-page-actions">
                     {{ if $championship.SignUpForm.AskForEmail }}
-                        <td>
-                            <a href="mailto:{{ $entrant.Email }}?subject={{ $championship.Name }}">{{ $entrant.Email }}</a>
-                        </td>
-                    {{ end }}
-                    {{ if not $championship.SignUpForm.HideCarChoice }}
-                        <td>
-                            {{ prettify $entrant.Car true }} / {{ prettify $entrant.Skin true }}
-                        </td>
-                    {{ end }}
-
-                    <td>
-                        {{ $entrant.Status }}
-                    </td>
-
-                    <td class="pl-2 pr-2">
-                        {{ if gt (len $championship.SignUpForm.ExtraFields) 0 }}
-
-                            <button type="button" class="btn btn-sm btn-warning dropdown-toggle popover-external-html mb-2" data-placement="left"
-                                    data-toggle="popover" data-html="true"
-                                    id="answers-{{ $entrant.GUID }}"
-                                    style="width: 100%;"
-                            >
-                                Ver Respuestas
-                            </button>
-
-                            <div id="popover-content-answers-{{ $entrant.GUID }}" style="display: none;">
-                                <div class="popover-signup-answers">
-                                    {{ range $index, $question := $championship.SignUpForm.ExtraFields }}
-                                        <strong>{{ $question }}</strong><br>{{ index $entrant.Questions $question }}<br>
-                                    {{ end }}
-                                </div>
-                            </div>
-
-                        {{ end }}
-
-
-                        <div class="dropdown show">
-                            <a class="btn btn-primary dropdown-toggle"
-                               style="width: 100%;" href="#" role="button" id="manageEntrant-{{ $entrant.GUID }}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                Administrar Participante
+                        <div class="dropdown show d-inline-block">
+                            <a class="btn btn-success dropdown-toggle" href="#" role="button" id="dropdownEmailEntrants" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                               Enviar Email a Participantes
                             </a>
 
-                            <div class="dropdown-menu" aria-labelledby="manageEntrant-{{ $entrant.GUID }}">
-
-                                <a class="dropdown-item text-success" href="/championship/{{ $championship.ID.String }}/entrant/{{ $entrant.GUID }}?action=accept">
-                                    Aceptar
+                            <div class="dropdown-menu" aria-labelledby="dropdownEmailEntrants">
+                                <a class="dropdown-item" href="mailto:?bcc={{ $championship.SignUpForm.EmailList "all" }}&subject={{ $championship.Name }}">
+                                    Todos los Participantes
                                 </a>
-
-                                <a class="dropdown-item text-danger" href="/championship/{{ $championship.ID.String }}/entrant/{{ $entrant.GUID }}?action=reject">
-                                    Rechazar
+                                <a class="dropdown-item" href="mailto:?bcc={{ $championship.SignUpForm.EmailList "accepted" }}&subject={{ $championship.Name }}">
+                                    Participantes Aceptados
                                 </a>
-
-                                <div class="dropdown-divider"></div>
-
-                                <a class="dropdown-item" href="/championship/{{ $championship.ID.String }}/entrant/{{ $entrant.GUID }}?action=delete">
-                                    Eliminar
+                                <a class="dropdown-item" href="mailto:?bcc={{ $championship.SignUpForm.EmailList "rejected" }}&subject={{ $championship.Name }}">
+                                    Participantes Rechazados
+                                </a>
+                                <a class="dropdown-item" href="mailto:?bcc={{ $championship.SignUpForm.EmailList "pending" }}&subject={{ $championship.Name }}">
+                                    Participantes Pendientes
                                 </a>
                             </div>
                         </div>
+                    {{ end }}
 
-                    </td>
+                    <a class="btn zg-btn-outline" href="/championship/{{ $championship.ID.String }}/entrants.csv"><i class="fas fa-download mr-1"></i> Exportar CSV</a>
+                </div>
+            </div>
+
+            <div class="zg-page-rule"></div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped">
+                <tr>
+                    <th>Creado</th>
+                    <th>Nombre</th>
+                    {{ with $.DriverRatings }}
+                        <th>Calificación</th>
+                    {{ end }}
+                    {{ if $championship.SignUpForm.AskForTeam }}
+                        <th>Equipo</th>
+                    {{ end }}
+                    <th>GUID</th>
+                    {{ if $championship.SignUpForm.AskForEmail }}
+                        <th>Email</th>
+                    {{ end }}
+                    {{ if not $championship.SignUpForm.HideCarChoice }}
+                        <th>Auto / Skin</th>
+                    {{ end }}
+                    <th>Estado</th>
+
+                    <th class="text-right">Acciones</th>
                 </tr>
-            {{ end }}
-        </table>
+
+                {{ range $index, $entrant := .SignUpForm.Responses }}
+                    <tr>
+                        <td class="text-monospace"><small>{{ timeFormat $entrant.Created }} el {{ dateFormat $entrant.Created }}</small></td>
+                        <td class="font-weight-bold">
+                            {{ $entrant.Name }}
+                        </td>
+                        {{ with $.DriverRatings }}
+                            <td>
+                                {{ template "acsr-rating" dict "DriverRatings" $.DriverRatings "GUID" $entrant.GUID }}
+                            </td>
+                        {{ end }}
+                        {{ if $championship.SignUpForm.AskForTeam }}
+                            <td>
+                                {{ $entrant.Team }}
+                            </td>
+                        {{ end }}
+                        <td><small><code>{{ $entrant.GUID }}</code></small></td>
+                        {{ if $championship.SignUpForm.AskForEmail }}
+                            <td>
+                                <a href="mailto:{{ $entrant.Email }}?subject={{ $championship.Name }}">{{ $entrant.Email }}</a>
+                            </td>
+                        {{ end }}
+                        {{ if not $championship.SignUpForm.HideCarChoice }}
+                            <td><small>{{ prettify $entrant.Car true }} / {{ prettify $entrant.Skin true }}</small></td>
+                        {{ end }}
+
+                        <td>
+                            <span class="badge badge-secondary">{{ $entrant.Status }}</span>
+                        </td>
+
+                        <td class="pl-2 pr-2 text-right">
+                            {{ if gt (len $championship.SignUpForm.ExtraFields) 0 }}
+
+                                <button type="button" class="btn btn-sm zg-btn-outline dropdown-toggle popover-external-html mb-2" data-placement="left"
+                                        data-toggle="popover" data-html="true"
+                                        id="answers-{{ $entrant.GUID }}"
+                                        style="width: 100%;"
+                                >
+                                    Ver Respuestas
+                                </button>
+
+                                <div id="popover-content-answers-{{ $entrant.GUID }}" style="display: none;">
+                                    <div class="popover-signup-answers">
+                                        {{ range $index, $question := $championship.SignUpForm.ExtraFields }}
+                                            <strong>{{ $question }}</strong><br>{{ index $entrant.Questions $question }}<br>
+                                        {{ end }}
+                                    </div>
+                                </div>
+
+                            {{ end }}
+
+
+                            <div class="dropdown show">
+                                <a class="btn btn-sm btn-primary dropdown-toggle"
+                                   style="width: 100%;" href="#" role="button" id="manageEntrant-{{ $entrant.GUID }}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    Administrar
+                                </a>
+
+                                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="manageEntrant-{{ $entrant.GUID }}">
+
+                                    <a class="dropdown-item text-success" href="/championship/{{ $championship.ID.String }}/entrant/{{ $entrant.GUID }}?action=accept">
+                                        Aceptar
+                                    </a>
+
+                                    <a class="dropdown-item text-danger" href="/championship/{{ $championship.ID.String }}/entrant/{{ $entrant.GUID }}?action=reject">
+                                        Rechazar
+                                    </a>
+
+                                    <div class="dropdown-divider"></div>
+
+                                    <a class="dropdown-item" href="/championship/{{ $championship.ID.String }}/entrant/{{ $entrant.GUID }}?action=delete">
+                                        Eliminar
+                                    </a>
+                                </div>
+                            </div>
+
+                        </td>
+                    </tr>
+                {{ end }}
+            </table>
+        </div>
     {{ end }}
 {{ end }}

@@ -1,31 +1,42 @@
 {{/* gotype: github.com/JustaPenguin/assetto-server-manager.carDetailsTemplateVars */}}
+{{/* Reestilado 1b. Intactos .car-details, #hero-skin, .car-skins, .car-skin,
+     .car-image[data-skin], #tags, .delete-tag, #add-tag, #new-tag, #CarNotes,
+     #summernote, #championship-info, #input-folder-skin, #upload-skin,
+     #skin-upload — todo lo que engancha el JS. */}}
 
 {{ define "title" }}{{ $.Car.Details.Name }}{{ end }}
 
 {{ define "content" }}
     <div class="car-details">
-        <h1 class="text-center">{{ $.Car.Details.Name }}</h1>
-        <div class="text-center mb-3">
-            <small>({{ $.Car.Name}})</small>
+        <div class="zg-page-head">
+            <a class="zg-page-eyebrow d-inline-block" href="/cars"><i class="fas fa-caret-left mr-1"></i> Volver a autos</a>
+            <h1 class="zg-page-title">{{ $.Car.Details.Name }}</h1>
 
-            {{ if $.Car.IsPaidDLC }}<span class="badge bg-dlc">DLC</span>{{ end }}
-            {{ if $.Car.IsMod }}<span class="badge bg-mod">Mod</span>{{ end }}
-            {{ if not (or $.Car.IsPaidDLC $.Car.IsMod) }}<span class="badge bg-default-content">Por Defecto</span>{{ end }}
+            <div class="mt-3">
+                <small class="text-monospace mr-2" style="color: var(--zg-text-dim)">{{ $.Car.Name}}</small>
 
+                {{ if $.Car.IsPaidDLC }}<span class="badge bg-dlc">DLC</span>{{ end }}
+                {{ if $.Car.IsMod }}<span class="badge bg-mod">Mod</span>{{ end }}
+                {{ if not (or $.Car.IsPaidDLC $.Car.IsMod) }}<span class="badge bg-default-content">Por Defecto</span>{{ end }}
+            </div>
+
+            <div class="zg-page-rule"></div>
         </div>
 
         {{ if gt (len $.Car.Skins) 0 }}
             {{ $skin := index $.Car.Skins 0 }}
 
-            <div class="row mb-3">
+            <div class="row mb-4">
                 <div class="col-8 col-md-10">
-                    <img class="img img-fluid car-image" id="hero-skin" src="{{ carSkinURL $.Car.Name $skin }}" alt="{{ $.Car.Details.Name }}, skin {{ $skin }}">
+                    <div class="thumb">
+                        <img class="car-image" id="hero-skin" src="{{ carSkinURL $.Car.Name $skin }}" alt="{{ $.Car.Details.Name }}, skin {{ $skin }}" onerror="this.style.display='none'">
+                    </div>
                 </div>
 
                 <div class="col-4 col-md-2 car-skins">
                     {{ range $index, $skin := $.Car.Skins }}
-                        <div class="car-skin">
-                            <img class="img img-fluid car-image" src="{{ carSkinURL $.Car.Name $skin }}" alt="{{ $.Car.Details.Name }}, skin {{ $skin }}" title="{{ prettify $skin true }}" data-skin="{{ $skin }}" data-toggle="tooltip" data-placement="bottom">
+                        <div class="car-skin mb-2">
+                            <img class="img img-fluid car-image" src="{{ carSkinURL $.Car.Name $skin }}" alt="{{ $.Car.Details.Name }}, skin {{ $skin }}" title="{{ prettify $skin true }}" data-skin="{{ $skin }}" data-toggle="tooltip" data-placement="bottom" onerror="this.style.display='none'">
                         </div>
                     {{ end }}
                 </div>
@@ -33,9 +44,9 @@
         {{ end }}
 
         <div class="row mb-3">
-            <div class="col-md-10">
-                <div class="row">
-                    <div class="{{ if WriteAccess }}col-md-9{{ else }}col-md-12{{ end }}" id="tags">
+            <div class="col-md-9">
+                <div class="row align-items-center">
+                    <div class="{{ if WriteAccess }}col-md-8{{ else }}col-md-12{{ end }}" id="tags">
                         {{ range $index, $tag := $.Car.Details.Tags }}
                             <span class="badge badge-primary">
                                 <a class="text-white"
@@ -58,9 +69,9 @@
                     </div>
 
                     {{ if WriteAccess }}
-                        <div class="col-md-3 text-right">
+                        <div class="col-md-4">
                             <form id="add-tag" method="post" action="/car/{{ $.Car.Name }}/tags">
-                                <div class="form-group row">
+                                <div class="form-group row mb-0">
                                     <div class="col-9">
                                         <input type="text" class="form-control form-control-sm" id="new-tag" name="new-tag" required
                                                placeholder="Agregar una etiqueta nueva">
@@ -72,172 +83,163 @@
                                 </div>
                             </form>
                         </div>
-
-                        <div class="col-md-2 text-right">
-                        </div>
                     {{ end }}
                 </div>
 
-                <div class="pt-2">
+                <div class="pt-4">
                     {{ with $.Car.Details.Notes }}
-                        <h2>Notas</h2>
-
-                        <p>{{ trustHTML . }}</p>
-
-                        <h2>Descripción</h2>
-                    {{ end }}
-
-                    {{ with $.Car.Details.Notes }}
+                        <div class="zg-row-card">
+                            <div class="zg-row-card-title" style="font-size: 1.3rem;">Notas</div>
+                            <div class="zg-page-lead">{{ trustHTML . }}</div>
+                        </div>
                     {{ end }}
 
                     {{ with $.Car.Details.Description }}
-                        <p>{{ trustHTML . }}</p>
+                        <p class="zg-page-lead">{{ trustHTML . }}</p>
                     {{ else }}
-                        <p>No hay descripción para este auto.</p>
+                        <p class="zg-page-lead">No hay descripción para este auto.</p>
                     {{ end }}
                 </div>
 
 
-                <h2>Setups</h2>
+                <h2 class="zg-page-title mt-4" style="font-size: 1.7rem;">Setups</h2>
+                <hr>
 
                 {{ if gt (len $.Setups) 0 }}
-                    <table class="table table-bordered table-striped">
-                        <tr>
-                            <th>Circuito</th>
-                            <th>Archivo de Setup</th>
-                            {{ if DeleteAccess }}
-                                <th class="text-center">Eliminar</th>
-                            {{ end }}
-                        </tr>
-                        {{ range $trackName, $setups := $.Setups }}
-                            {{ range $index, $setup := $setups }}
-                                <tr>
-                                    {{ if eq $index 0 }}
-                                        <td rowspan="{{ len $setups }}">
-                                            {{ prettify $trackName false }}
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped">
+                            <tr>
+                                <th>Circuito</th>
+                                <th>Archivo de Setup</th>
+                                {{ if DeleteAccess }}
+                                    <th class="text-center" style="width: 90px">Eliminar</th>
+                                {{ end }}
+                            </tr>
+                            {{ range $trackName, $setups := $.Setups }}
+                                {{ range $index, $setup := $setups }}
+                                    <tr>
+                                        {{ if eq $index 0 }}
+                                            <td rowspan="{{ len $setups }}" class="font-weight-bold">
+                                                {{ prettify $trackName false }}
+                                            </td>
+                                        {{ end }}
+
+                                        <td>
+                                            <a href="{{ printf "/setups/download/%s/%s/%s" $.Car.Name $trackName $setup }}">
+                                                {{ $setup }}
+                                            </a>
                                         </td>
-                                    {{ end }}
 
-                                    <td>
-                                        <a href="{{ printf "/setups/download/%s/%s/%s" $.Car.Name $trackName $setup }}">
-                                            {{ $setup }}
-                                        </a>
-                                    </td>
-
-                                    {{ if DeleteAccess }}
-                                        <td class="text-center">
-                                            <a href="{{ printf "/setups/delete/%s/%s/%s" $.Car.Name $trackName $setup }}"><i class="fas fa-trash text-danger"></i></a>
-                                        </td>
-                                    {{ end }}
-                                </tr>
+                                        {{ if DeleteAccess }}
+                                            <td class="text-center">
+                                                <a href="{{ printf "/setups/delete/%s/%s/%s" $.Car.Name $trackName $setup }}"><i class="fas fa-trash text-danger"></i></a>
+                                            </td>
+                                        {{ end }}
+                                    </tr>
+                                {{ end }}
                             {{ end }}
-                        {{ end }}
-                    </table>
-
-                    {{ if WriteAccess }}
-                        <p>Podés subir setups para este auto usando el formulario de abajo.</p>
-                    {{ end }}
+                        </table>
+                    </div>
                 {{ else }}
-                    <p>No hay setups para este auto.{{ if WriteAccess }} Podés subir uno abajo.{{ end }}</p>
+                    <p class="zg-page-lead">No hay setups para este auto.{{ if WriteAccess }} Podés subir uno abajo.{{ end }}</p>
                 {{ end }}
 
 
                 {{ if WriteAccess }}
-                    <form method="post" action="/setups/upload" enctype="multipart/form-data" class="mb-2">
-                        <div class="form-group row">
-                            <label for="Track" class="col-sm-3 col-form-label">
-                                Circuito
-                            </label>
+                    <div class="card mb-4">
+                        <div class="card-header"><strong>Subir un setup</strong></div>
+                        <div class="card-body">
+                            <form method="post" action="/setups/upload" enctype="multipart/form-data">
+                                <div class="form-group row">
+                                    <label for="Track" class="col-sm-3 col-form-label">
+                                        Circuito
+                                    </label>
 
-                            <div class="col-sm-9">
-                                <select class="form-control" name="Track" id="Track">
-                                    <option value="generic">Genérico</option>
+                                    <div class="col-sm-9">
+                                        <select class="form-control" name="Track" id="Track">
+                                            <option value="generic">Genérico</option>
 
-                                    {{ range $index, $track := .TrackOpts }}
-                                        <option value="{{ $track.Name }}">
-                                            {{ prettify $track.Name false }}
-                                        </option>
-                                    {{ end }}
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="form-group row">
-                            <label for="SetupFile" class="col-sm-3 col-form-label">
-                                Archivo de Setup
-                            </label>
-
-                            <div class="col-sm-9">
-                                <div class="custom-file">
-                                    <input type="file" class="custom-file-input" id="SetupFile" name="SetupFile" accept=".ini">
-                                    <label class="custom-file-label" for="SetupFile">Elegir Setup</label>
+                                            {{ range $index, $track := .TrackOpts }}
+                                                <option value="{{ $track.Name }}">
+                                                    {{ prettify $track.Name false }}
+                                                </option>
+                                            {{ end }}
+                                        </select>
+                                    </div>
                                 </div>
-                            </div>
+
+                                <div class="form-group row">
+                                    <label for="SetupFile" class="col-sm-3 col-form-label">
+                                        Archivo de Setup
+                                    </label>
+
+                                    <div class="col-sm-9">
+                                        <div class="custom-file">
+                                            <input type="file" class="custom-file-input" id="SetupFile" name="SetupFile" accept=".ini">
+                                            <label class="custom-file-label" for="SetupFile">Elegir Setup</label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="btn btn-success float-right">Subir Setup</button>
+
+                                <div class="clearfix"></div>
+                            </form>
                         </div>
-
-                        <button type="submit" class="btn btn-success float-right">Subir Setup</button>
-
-                        <div class="clearfix"></div>
-                    </form>
+                    </div>
                 {{ end }}
 
-                <h2>Sesiones</h2>
+                <div class="d-flex align-items-baseline justify-content-between mt-4">
+                    <h2 class="zg-page-title" style="font-size: 1.7rem;">Sesiones</h2>
+                    <small style="color: var(--zg-text-dim)">Este auto se usó en {{ len $.Results }} sesiones.</small>
+                </div>
+                <hr>
 
-                <p>Este auto se usó en {{ len $.Results }} sesiones.</p>
-
-                <div class="list-group overflow-auto mt-3 mb-3" style="max-height: 300px;">
+                <div class="list-group overflow-auto mb-3" style="max-height: 300px;">
                     {{ range $index, $session := $.Results }}
                         <a class="list-group-item list-group-item-action" href="/results/{{ $session.SessionFile }}">
                             <div class="d-flex w-100 justify-content-between">
-                                <h5 class="mb-2 text-primary"><strong>{{ title (lower $session.Type.String) }}</strong></h5>
-                                <small>{{ fullTimeFormat $session.Date }}</small>
+                                <strong>{{ title (lower $session.Type.String) }}</strong>
+                                <small class="text-monospace">{{ fullTimeFormat $session.Date }}</small>
                             </div>
-                            <p class="mb-1">{{ prettify $session.TrackName false }} {{ with $session.TrackConfig }}({{ prettify . true }}){{ end }}</p>
+                            <p class="mb-0"><small>{{ prettify $session.TrackName false }} {{ with $session.TrackConfig }}({{ prettify . true }}){{ end }}</small></p>
                         </a>
                     {{ end }}
                 </div>
 
             </div>
 
-            <div class="col-md-2 border-left">
-                <div class="mb-4">
-                    {{ with $.Car.Details.DownloadURL }}
-                        <div class="pb-2 text-center">
-                            <a href="{{ . }}" class="btn btn-success d-block w-100" target="_blank">Descargar Auto</a>
-                        </div>
-                    {{ end }}
-                </div>
+            <div class="col-md-3">
+                {{ with $.Car.Details.DownloadURL }}
+                    <a href="{{ . }}" class="btn btn-success btn-block mb-4" target="_blank"><i class="fas fa-download mr-1"></i> Descargar Auto</a>
+                {{ end }}
 
-                <h4>Neumáticos</h4>
-
-                <ul class="list-unstyled">
+                <div class="zg-stat-label mb-2">Neumáticos</div>
+                <ul class="list-unstyled mb-4">
                     {{ range $tyre, $name := $.Car.Tyres }}
-                        <li>{{ $name }} ({{ $tyre }})</li>
+                        <li><small>{{ $name }} <span class="text-monospace" style="color: var(--zg-text-dim)">({{ $tyre }})</span></small></li>
                     {{ end }}
                 </ul>
 
-                <h4>Especificaciones</h4>
-
-                <ul class="list-unstyled">
-                    {{ with $.Car.Details.Specs.Acceleration }}<li><strong>Aceleración:</strong> {{ . }}</li>{{ end }}
-                    {{ with $.Car.Details.Specs.BHP }}<li><strong>BHP:</strong> {{ . }}</li>{{ end }}
-                    {{ with $.Car.Details.Specs.PWRatio }}<li><strong>Relación Potencia/Peso:</strong> {{ . }}</li>{{ end }}
-                    {{ with $.Car.Details.Specs.TopSpeed }}<li><strong>Velocidad Máxima:</strong> {{ . }}</li>{{ end }}
-                    {{ with $.Car.Details.Specs.Torque }}<li><strong>Torque:</strong> {{ . }}</li>{{ end }}
-                    {{ with $.Car.Details.Specs.Weight }}<li><strong>Peso:</strong> {{ . }}</li>{{ end }}
+                <div class="zg-stat-label mb-2">Especificaciones</div>
+                <ul class="list-unstyled mb-4">
+                    {{ with $.Car.Details.Specs.Acceleration }}<li><small><strong>Aceleración:</strong> {{ . }}</small></li>{{ end }}
+                    {{ with $.Car.Details.Specs.BHP }}<li><small><strong>BHP:</strong> {{ . }}</small></li>{{ end }}
+                    {{ with $.Car.Details.Specs.PWRatio }}<li><small><strong>Potencia/Peso:</strong> {{ . }}</small></li>{{ end }}
+                    {{ with $.Car.Details.Specs.TopSpeed }}<li><small><strong>Velocidad Máxima:</strong> {{ . }}</small></li>{{ end }}
+                    {{ with $.Car.Details.Specs.Torque }}<li><small><strong>Torque:</strong> {{ . }}</small></li>{{ end }}
+                    {{ with $.Car.Details.Specs.Weight }}<li><small><strong>Peso:</strong> {{ . }}</small></li>{{ end }}
                 </ul>
 
-                <h4>Acerca de</h4>
-
+                <div class="zg-stat-label mb-2">Acerca de</div>
                 <ul class="list-unstyled">
-                    {{ with $.Car.Details.Author }}<li><strong>Autor:</strong> <a href="/cars?q=%2Bauthor:{{ . }}">{{ . }}</a></li>{{ end }}
-                    {{ with $.Car.Details.Brand }}<li><strong>Marca:</strong> <a href="/cars?q=%2Bbrand:{{ . }}">{{ . }}</a></li>{{ end }}
-                    {{ with $.Car.Details.Class }}<li><strong>Clase:</strong> <a href="/cars?q=%2Bclass:{{ . }}">{{ . }}</a></li>{{ end }}
-                    {{ with $.Car.Details.Country }}<li><strong>País:</strong> <a href="/cars?q=%2Bcountry:{{ . }}">{{ . }}</a></li>{{ end }}
-                    {{ with $.Car.Details.Year }}<li><strong>Año:</strong> <a href="/cars?q=%2Byear:{{ . }}">{{ . }}</a></li>{{ end }}
-                    {{ with $.Car.Details.Version }}<li><strong>Versión:</strong> {{ . }}</li>{{ end }}
+                    {{ with $.Car.Details.Author }}<li><small><strong>Autor:</strong> <a href="/cars?q=%2Bauthor:{{ . }}">{{ . }}</a></small></li>{{ end }}
+                    {{ with $.Car.Details.Brand }}<li><small><strong>Marca:</strong> <a href="/cars?q=%2Bbrand:{{ . }}">{{ . }}</a></small></li>{{ end }}
+                    {{ with $.Car.Details.Class }}<li><small><strong>Clase:</strong> <a href="/cars?q=%2Bclass:{{ . }}">{{ . }}</a></small></li>{{ end }}
+                    {{ with $.Car.Details.Country }}<li><small><strong>País:</strong> <a href="/cars?q=%2Bcountry:{{ . }}">{{ . }}</a></small></li>{{ end }}
+                    {{ with $.Car.Details.Year }}<li><small><strong>Año:</strong> <a href="/cars?q=%2Byear:{{ . }}">{{ . }}</a></small></li>{{ end }}
+                    {{ with $.Car.Details.Version }}<li><small><strong>Versión:</strong> {{ . }}</small></li>{{ end }}
                 </ul>
-
             </div>
         </div>
 
@@ -246,8 +248,8 @@
 
                 {{ if WriteAccess }}
                     <form method="post" action="/car/{{ $.Car.Name }}/metadata">
-                        <div class="card mt-3 border-primary mt-5 mb-3">
-                            <div class="card-header text-white bg-primary">
+                        <div class="card mt-4 mb-3">
+                            <div class="card-header">
                                 <strong>Metadatos del Auto</strong>
                             </div>
                             <div class="card-body">
@@ -283,15 +285,14 @@
                                     </div>
                                 </div>
 
-                                <div class="float-right mt-5">
-                                    <button class="btn btn-primary" type="submit">Guardar Metadatos del Auto</button>
-                                </div>
+                                <button class="btn btn-primary float-right mt-4" type="submit"><i class="fas fa-save mr-1"></i> Guardar Metadatos</button>
+                                <div class="clearfix"></div>
                             </div>
                         </div>
                     </form>
 
-                    <div class="card mt-3 border-secondary mb-3">
-                        <div class="card-header bg-secondary">
+                    <div class="card mb-3">
+                        <div class="card-header">
                             <strong>Skins</strong>
                         </div>
                         <div class="card-body">
@@ -300,8 +301,8 @@
                                     <label for="input-folder-skin" class="col-sm-3 col-form-label">Subir Skin</label>
 
                                     <div class="col-sm-9">
-                                        <div class="btn-file btn btn-secondary d-inline-block align-top">
-                                            Elegir un Skin
+                                        <div class="btn-file btn zg-btn-outline d-inline-block align-top">
+                                            <i class="fas fa-folder-open mr-1"></i> Elegir un Skin
                                             <input id="input-folder-skin" name="input-folder-skin[]" type="file"
                                                    multiple webkitdirectory value="Choose Folder"/>
                                         </div>
@@ -317,7 +318,7 @@
                                 <hr>
 
                                 <form action="/car/{{ $.Car.Name }}/skin/delete" method="post">
-                                    <div class="form-group row">
+                                    <div class="form-group row mb-0">
                                         <label for="skin-delete" class="col-sm-3 col-form-label">Eliminar Skin</label>
 
                                         <div class="col-sm-9 row">
@@ -341,21 +342,18 @@
                 {{ end }}
 
                 {{ if DeleteAccess }}
-                    <div class="card border-danger mt-3 mb-3">
-                        <div class="card-header text-white bg-danger">
-                            ¡Zona de Peligro!
-                        </div>
-
-                        <div class="card-body">
-                            <p class="float-left">Eliminar permanentemente este auto y todos sus skins asociados.</p>
+                    <div class="zg-row-card mt-4">
+                        <div class="d-flex align-items-center justify-content-between flex-wrap">
+                            <div>
+                                <div class="zg-row-card-title" style="font-size: 1.3rem;">Zona de peligro</div>
+                                <p class="zg-page-lead mb-0">Eliminar permanentemente este auto y todos sus skins asociados.</p>
+                            </div>
 
                             <a onclick="return confirm('¿Estás seguro de que querés eliminar permanentemente este auto y todos sus skins asociados?');"
-                               class="btn btn-danger float-right"
+                               class="btn btn-danger"
                                href="/car/{{ $.Car.Name }}/delete">
                                 Eliminar Auto
                             </a>
-
-                            <div class="clearfix"></div>
                         </div>
                     </div>
                 {{ end }}

@@ -27,15 +27,19 @@
     {{ $f := .Current }}
     {{ $trackInfo := trackInfo $f.Track $f.TrackLayout }}
 
-    <h1 class="text-center">
-        {{ if .IsChampionship }}
-            Evento de Campeonato
-        {{ else if .IsRaceWeekend }}
-            Sesión de Fin de Semana de Carrera
-        {{ else }}
-            Carrera Personalizada
-        {{ end }}
-    </h1>
+    <div class="zg-page-head">
+        <div class="zg-page-eyebrow">Eventos configurables</div>
+        <h1 class="zg-page-title">
+            {{ if .IsChampionship }}
+                Evento de Campeonato
+            {{ else if .IsRaceWeekend }}
+                Sesión de Fin de Semana de Carrera
+            {{ else }}
+                Carrera Personalizada
+            {{ end }}
+        </h1>
+        <div class="zg-page-rule"></div>
+    </div>
 
     {{ if .IsChampionship }}
         <p>Configurá un Evento para el Campeonato <strong>{{ .Championship.Name }}</strong>.</p>

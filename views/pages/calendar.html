@@ -1,13 +1,26 @@
 {{/* gotype: github.com/JustaPenguin/assetto-server-manager.BaseTemplateVars */}}
+{{/* Reestilado 1b. #calendar lo sigue llenando el JS del bundle; el estilo de la
+     grilla y los eventos está en zonegan-1b.css (sección CALENDARIO). */}}
 
 {{ define "title" }}Calendario{{ end }}
 
 {{ define "content" }}
-    <div id="calendar"></div>
+    <div class="zg-page-head">
+        <div class="d-flex align-items-end justify-content-between flex-wrap">
+            <div>
+                <div class="zg-page-eyebrow">Eventos programados</div>
+                <h1 class="zg-page-title">Calendario</h1>
+            </div>
 
-    <div class="d-block mt-3">
-        <a href="/events.ics">
-            <i class="fas fa-calendar"></i> Suscribirse al Feed del Calendario
-        </a>
+            <div class="zg-page-actions">
+                <a href="/events.ics" class="btn zg-btn-outline">
+                    <i class="fas fa-calendar mr-1"></i> Suscribirse al Feed del Calendario
+                </a>
+            </div>
+        </div>
+
+        <div class="zg-page-rule"></div>
     </div>
+
+    <div id="calendar"></div>
 {{ end }}
