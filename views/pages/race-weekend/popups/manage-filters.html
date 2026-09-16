@@ -1,0 +1,338 @@
+{{/* gotype:github.com/JustaPenguin/assetto-server-manager.raceWeekendFilterTemplateVars */}}
+
+{{ define "partial" }}
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Configurar Lista de Inscriptos de {{ $.ChildSession.Name }}</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>
+                    Podés modificar la Lista de Inscriptos de {{ $.ChildSession.Name }} cambiando la configuración de filtros de abajo.
+
+
+                    {{ if not $.ParentSession.Completed }}
+                        La sesión {{ $.ParentSession.Name }} todavía no se completó. Se va a mostrar una grilla simulada para que puedas ver cómo
+                        se van a aplicar los filtros de abajo cuando esta sesión se complete.
+                    {{ end }}
+                </p>
+
+                {{ if and $.RaceWeekend.HasLinkedChampionship (not $.ParentSession.IsBase) }}
+                    {{ if $.RaceWeekend.Championship.IsMultiClass }}
+                        <p class="text-primary">Este Fin de Semana de Carrera está vinculado a un Campeonato Multi-Clase. El orden se va a aplicar dentro de cada clase, con las clases ordenadas por la vuelta más rápida de cada una (así que, por ejemplo, los autos LMP1 quedarían adelante de los GTE en la grilla)</p>
+                    {{ end }}
+                {{ end }}
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <form>
+
+                            <div class="card border-warning">
+                                <div class="card-body">
+                                    <p>Ordená los pilotos de {{ $.ParentSession.Name }}{{ if not $.ParentSession.IsBase}} Resultados{{ end }} por:</p>
+
+                                    <div class="form-group row">
+                                        <label for="ResultsSort" class="col-sm-4 col-form-label">Ordenar Por</label>
+
+                                        <div class="col-sm-8">
+                                            {{ if WriteAccess }}
+                                                <select id="ResultsSort" name="ResultsSort" class="form-control">
+                                                    {{ range $index, $sorter := $.AvailableSorters }}
+                                                        {{ if and (not (and $.ParentSession.IsBase $sorter.NeedsParentSession)) (not (and (not $.RaceWeekend.HasLinkedChampionship) $sorter.NeedsChampionship)) }}
+                                                            <option value="{{ $sorter.Key }}" {{ if eq $sorter.Key $.Filter.SortType }}selected="selected"{{ end }}>{{ $sorter.Name }}</option>
+                                                        {{ end }}
+                                                    {{ end }}
+                                                </select>
+                                            {{ else }}
+                                                <label class="col-form-label">
+                                                    {{ range $index, $sorter := $.AvailableSorters }}
+                                                        {{ if eq $sorter.Key $.Filter.SortType }}
+                                                            {{ $sorter.Name }}
+                                                        {{ end }}
+                                                    {{ end }}
+                                                </label>
+                                            {{ end }}
+                                        </div>
+
+                                        {{ if not $.ParentSession.Completed }}
+                                            <div class="pl-3 pr-3">
+                                                <small class="text-danger">La Sesión Padre ({{ $.ParentSession.Name }}) todavía no se completó. Ordenar no va a cambiar la vista previa en vivo, pero se va a aplicar a la grilla cuando la Sesión {{ $.ParentSession.Name }} se complete.</small>
+                                            </div>
+                                        {{ end }}
+                                    </div>
+
+                                    <div class="form-group row" id="AvailableResultsWrapper">
+                                        <label for="AvailableResults" class="col-sm-4 col-form-label">Archivos de Resultados</label>
+
+                                        <div class="col-sm-8">
+
+                                            <select multiple required class="form-control" name="AvailableResults" id="AvailableResults" size="15">
+                                                {{ range $index, $result := $.ResultsAvailableForSorting }}
+                                                    {{ $selected := false }}
+
+                                                    {{ range $index, $availableResult := $.Filter.AvailableResultsForSorting }}
+                                                        {{ if eq $result.SessionFile $availableResult }}
+                                                            {{ $selected = true }}
+                                                        {{ end }}
+                                                    {{ end}}
+
+                                                    <option value="{{ $result.SessionFile }}" {{ if $selected }} selected="selected" {{ end }}>{{ $result.Type.String }} el {{ dateFormat $result.Date }} a las {{ timeFormat $result.Date }}</option>
+                                                {{ end }}
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group row">
+                                        <label for="ReverseGrid" class="col-sm-4 col-form-label">¿Invertir?</label>
+
+                                        <div class="col-sm-8">
+                                            <input
+                                                    {{ if WriteAccess }}
+                                                        type="number"
+                                                    {{ else }}
+                                                        type="hidden"
+                                                    {{ end }}
+                                                    class="form-control"
+                                                    id="ReverseGrid"
+                                                    name="ReverseGrid"
+                                                    value="{{ $.Filter.NumEntrantsToReverse }}"
+                                            >
+
+                                            {{ if not WriteAccess }}
+                                                <label class="col-form-label">
+                                                    {{ if eq $.Filter.NumEntrantsToReverse 0 }}
+                                                        No
+                                                    {{ else if lt $.Filter.NumEntrantsToReverse 0 }}
+                                                        Todos
+                                                    {{ else }}
+                                                        {{ $.Filter.NumEntrantsToReverse }}
+                                                    {{ end }}
+                                                </label>
+                                            {{ end }}
+                                        </div>
+
+                                        {{ if WriteAccess }}
+                                            <div class="pl-3">
+                                                <small>
+                                                    0 = No invertir. -1 = Invertir todo. N = Invertir los primeros N.
+                                                </small>
+                                            </div>
+                                        {{ end }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="text-center mt-2 mb-2">
+                                <i class="fa fa-arrow-down"></i>
+                            </div>
+
+
+                            <div class="card border-primary">
+                                <div class="card-body">
+
+                                    {{ if $.ParentSession.IsBase }}
+                                        <p>Tomar los pilotos de la Lista de Inscriptos de {{ $.RaceWeekend.Name }}:</p>
+                                    {{ else }}
+                                        <p>Tomar los pilotos de los Resultados ordenados de <strong>{{ $.ParentSession.Name }}</strong>:</p>
+                                    {{ end }}
+
+                                    <div class="form-group row">
+                                        <label for="SplitType" class="col-sm-4 col-form-label">Tipo de División</label>
+
+                                        <div class="col-sm-8">
+                                            {{ if WriteAccess }}
+                                                <select name="SplitType" id="SplitType" class="form-control">
+                                                    {{ range $index, $splitType := $.RaceWeekend.GetAvailableSplitTypes }}
+                                                        <option value="{{ $splitType }}" {{ if eq $.Filter.SplitType $splitType }}selected="selected"{{ end }}>{{ $splitType }}</option>
+                                                    {{ end }}
+                                                </select>
+                                            {{ else }}
+                                                <label class="col-form-label">{{ $.Filter.SplitType }}</label>
+                                                <input type="hidden" name="SplitType" id="SplitType" value="{{ $.Filter.SplitType }}">
+                                            {{ end }}
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group row" style="display: none;" id="DriverSelectionForm">
+                                        <div class="col-sm-12">
+                                            <select multiple id="Drivers" class="form-control" {{ if not WriteAccess }}disabled{{ end }} name="Drivers" style="min-height: 200px;">
+                                                {{ range $index, $result := $.ParentSessionResults }}
+                                                    {{ $driverSelected := false }}
+
+                                                    {{ range $index, $guid := $.Filter.SelectedDriverGUIDs }}
+                                                        {{ if eq $result.Car.Driver.GUID $guid }}
+                                                            {{ $driverSelected = true }}
+                                                        {{ end }}
+                                                    {{ end }}
+
+                                                    <option value="{{ $result.Car.Driver.GUID }}" {{ if $driverSelected }}selected="selected"{{ end }}>{{ $result.Car.Driver.Name }}</option>
+                                                {{ end }}
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group row" style="display: none;" id="ClassSelectionForm">
+                                        <div class="col-sm-12">
+                                            <select multiple name="Classes" id="Classes" class="form-control" {{ if not WriteAccess }}disabled{{ end }}>
+                                                {{ range $classID, $class := $.ChampionshipClasses }}
+                                                    <option value="{{ $classID}}" {{ with (index $.Filter.SelectedChampionshipClassIDs $classID) }}selected="selected"{{ end }}>
+                                                        {{ $class.Name }}
+                                                    </option>
+                                                {{ end }}
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div id="FilterFromTo">
+                                        <div class="form-group row">
+                                            <label for="ResultsStart" class="col-sm-4 col-form-label">Desde</label>
+
+                                            <div class="col-sm-8">
+                                                <input
+                                                        {{ if WriteAccess }}
+                                                            type="number"
+                                                        {{ else }}
+                                                            type="hidden"
+                                                        {{ end }}
+                                                        id="ResultsStart"
+                                                        name="ResultsStart"
+                                                        class="form-control"
+                                                        value="{{ $.Filter.ResultStart }}"
+                                                        step="1"
+                                                        min="1"
+                                                >
+
+                                                {{ if not WriteAccess }}
+                                                    <label class="col-form-label">{{ $.Filter.ResultStart }}</label>
+                                                {{ end }}
+                                            </div>
+                                        </div>
+                                        <div class="form-group row">
+                                            <label for="ResultsEnd" class="col-sm-4 col-form-label">Hasta</label>
+
+                                            <div class="col-sm-8">
+                                                <input
+                                                        {{ if WriteAccess }}
+                                                            type="number"
+                                                        {{ else }}
+                                                            type="hidden"
+                                                        {{ end }}
+                                                        id="ResultsEnd"
+                                                        name="ResultsEnd"
+                                                        class="form-control"
+                                                        value="{{ $.Filter.ResultEnd }}"
+                                                        step="1"
+                                                        min="1"
+                                                >
+
+                                                {{ if not WriteAccess }}
+                                                    <label class="col-form-label">{{ $.Filter.ResultEnd }}</label>
+                                                {{ end }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="text-center mt-2 mb-2">
+                                <i class="fa fa-arrow-down"></i>
+                            </div>
+
+                            <div class="card border-success">
+                                <div class="card-body">
+
+                                    <p>Después colocar a los pilotos resultantes en la Lista de Inscriptos de <strong>{{ $.ChildSession.Name }}</strong> desde:</p>
+
+                                    <div class="form-group row">
+                                        <label for="GridStart" class="col-sm-4 col-form-label">Inicio de Grilla</label>
+
+                                        <div class="col-sm-8">
+                                            <input
+                                                    {{ if WriteAccess }}
+                                                        type="number"
+                                                    {{ else }}
+                                                        type="hidden"
+                                                    {{ end }}
+                                                    id="GridStart"
+                                                    name="GridStart"
+                                                    class="form-control"
+                                                    value="{{ $.Filter.EntryListStart }}"
+                                                    step="1"
+                                                    min="1"
+                                            >
+
+                                            {{ if not WriteAccess }}
+                                                <label class="col-form-label">{{ $.Filter.EntryListStart }}</label>
+                                            {{ end }}
+                                        </div>
+                                    </div>
+
+
+                                    <div class="form-group row">
+                                        <label for="ForceUseTyreFromFastestLap" class="col-sm-4 col-form-label">Largar con el Neumático de la Vuelta Más Rápida</label>
+
+                                        <div class="col-sm-8">
+                                            <input
+                                                    class="form-control"
+                                                    {{ if WriteAccess }}
+                                                        type="checkbox"
+                                                    {{ else }}
+                                                        type="hidden"
+                                                    {{ end }}
+                                                    id="ForceUseTyreFromFastestLap"
+                                                    name="ForceUseTyreFromFastestLap"
+                                                    {{ if $.Filter.ForceUseTyreFromFastestLap }}
+                                                        checked="checked"
+                                                    {{ end }}
+                                            >
+                                            {{ if not WriteAccess }}
+                                                <label class="col-form-label">
+                                                    {{ if $.Filter.ForceUseTyreFromFastestLap }}
+                                                        Sí
+                                                    {{ else }}
+                                                        No
+                                                    {{ end }}
+                                                </label>
+                                            {{ end }}
+
+                                            <br/>
+
+
+                                            <small>Si está habilitado, los participantes de la próxima sesión van a estar obligados a largar con los mismos neumáticos que usaron en su vuelta más rápida de la sesión anterior.</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div id="table-key"></div>
+
+                        <table class="table table-bordered table-striped table-sm" id="grid-preview">
+                            <tr class="text-center">
+                                <th>
+                                    {{ if $.ParentSession.IsBase }}
+                                        Lista de Inscriptos del Fin de Semana de Carrera
+                                    {{ else }}
+                                        Resultados de {{ $.ParentSession.Name }}
+                                    {{ end }}
+                                </th>
+                                <th>Grilla Esperada de {{ $.ChildSession.Name }}</th>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                {{ if WriteAccess }}
+                    <button type="button" class="btn btn-primary" id="save-filters">Guardar cambios</button>
+                {{ end }}
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ if WriteAccess }}Cancelar{{ else }}Cerrar{{ end }}</button>
+            </div>
+        </div>
+    </div>
+{{ end }}

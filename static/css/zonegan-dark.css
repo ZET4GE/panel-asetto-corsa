@@ -1,0 +1,19 @@
+@import url('zonegan-shared.css');
+:root{
+  --zg-bg: #0b0f17;
+  --zg-surface: #121826;
+  --zg-surface-2: #1a2233;
+  --zg-surface-3: #222c42;
+  --zg-border: #2a3348;
+  --zg-text: #eef1f6;
+  --zg-text-dim: #8b93a7;
+  --zg-row-hover: #1c2333;
+  --zg-accent: #e6162c;
+  --zg-accent-hover: #ff3b50;
+  --zg-accent-glow: rgba(230,22,44,0.35);
+  --zg-accent-2: #2bd97c;
+  --zg-accent-2-hover: #4bf295;
+  --zg-accent-2-glow: rgba(43,217,124,0.35);
+  --zg-shadow: 0 8px 24px rgba(0,0,0,0.45);
+  --zg-shadow-sm: 0 2px 10px rgba(0,0,0,0.35);
+}

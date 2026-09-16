@@ -1,0 +1,28 @@
+{{/* gotype: github.com/JustaPenguin/assetto-server-manager.serverOptionsTemplateVars */}}
+
+{{ define "title" }}Opciones{{ end }}
+
+{{ define "content" }}
+    <h1 class="text-center">Opciones</h1>
+
+    <p>Estas opciones de configuración se aplican globalmente: se aplican a cada configuración de carrera que inicia Server Manager.</p>
+
+    <form method="post" action="/server-options">
+        {{ $.Form }}
+
+        <button class="btn btn-success float-right" type="submit">Guardar</button>
+
+        <div class="clearfix"></div>
+    </form>
+
+    <hr>
+
+    <h3>Mantenimiento</h3>
+
+    <p>
+        Podés usar el botón de abajo para reconstruir el Índice de Búsqueda. No deberías necesitarlo seguido —si es que alguna vez lo necesitás— pero
+        si agregaste contenido manualmente a tu carpeta de contenido (es decir, sin subirlo a través de Server Manager),
+        vas a necesitar usar esto para que el contenido aparezca en la Búsqueda. Tené en cuenta que este proceso puede tardar bastante.
+    </p>
+    <a class="btn btn-primary" href="/search-index">Reconstruir Índice de Búsqueda</a>
+{{ end }}

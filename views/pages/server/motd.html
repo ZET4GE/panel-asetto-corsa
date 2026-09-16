@@ -1,0 +1,46 @@
+{{/* gotype: github.com/JustaPenguin/assetto-server-manager.motdTemplateVars */}}
+
+{{ define "title" }}Mensajes{{ end }}
+
+{{ define "content" }}
+    <h1 class="text-center">Mensajes</h1>
+
+    <form method="post" action="/motd">
+        <div class="mb-3">
+            <h3>MOTD</h3>
+
+            <label for="motd">Mensaje del día. Assetto Corsa lo muestra en una ventana emergente de pantalla completa a todos los que entren al servidor.</label>
+            <textarea id="motd" name="motd" class="form-control md-textarea text-area">{{ .MOTDText }}</textarea>
+        </div>
+
+        <div class="mb-3">
+            <h3>Mensaje de Ingreso al Servidor</h3>
+
+            <label for="serverJoinMessage">Se muestra en el chat a cada usuario cuando entra al servidor.</label>
+            <textarea id="serverJoinMessage" name="serverJoinMessage" class="form-control md-textarea text-area">{{ $.Opts.ServerJoinMessage }}</textarea>
+        </div>
+
+        <div class="mb-3">
+            <h3>Mensaje de Bienvenida de Content Manager</h3>
+
+            {{ if and $.Opts.EnableContentManagerWrapper (gt $.Opts.ContentManagerWrapperPort 0) }}
+                <div class="d-none" id="ContentManagerMessageContent">{{ trustHTML $.Opts.ContentManagerWelcomeMessage }}</div>
+
+                <label for="contentManagerWelcomeMessage">
+                    Se muestra a los usuarios de Content Manager antes de que entren al servidor.
+
+                    Este campo es una plantilla, en la que podés acceder a datos sobre tu manager/el evento actual.
+                    Podés escribir lo que quieras acá. Si ponés <code>&lbrace;&lbrace; .ServerName &rbrace;&rbrace;</code>, se va a reemplazar por el Nombre del Servidor.
+                    Si ponés <code>&lbrace;&lbrace; .EventName &rbrace;&rbrace;</code>, se va a reemplazar por el Nombre del Evento.
+                    ¡Podés <a href='https://github.com/JustaPenguin/assetto-server-manager/wiki/Content-Manager-Description-Templates'>ver algunos ejemplos</a> en la Wiki de Server Manager!
+                </label><br>
+                <textarea id="contentManagerWelcomeMessage" name="contentManagerWelcomeMessage"></textarea>
+            {{ else }}
+                Habilitá el Content Manager Wrapper en <a href="/server-options">Opciones del Servidor</a> para mostrar este mensaje.
+            {{ end }}
+        </div>
+
+
+        <button class="btn btn-success float-right mt-2" type="submit">Guardar</button>
+    </form>
+{{ end }}

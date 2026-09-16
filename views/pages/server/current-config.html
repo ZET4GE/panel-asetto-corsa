@@ -1,0 +1,16 @@
+{{/* gotype: github.com/JustaPenguin/assetto-server-manager.currentCFGTemplateVars */}}
+
+{{ define "title" }}Configuración Actual{{ end }}
+
+{{ define "content" }}
+    <h1 class="text-center">Configuración Actual</h1>
+
+    <p><small>Esta página contiene el <code>server_cfg.ini</code> y el <code>entry_list.ini</code> que están actualmente
+        aplicados al servidor. Esta información es para diagnóstico, así que es de solo lectura.</small></p>
+
+    <label for="current-config">Configuración del Servidor</label>
+    <textarea readonly id="current-config" name="current-config" class="form-control md-textarea text-area mb-1" rows="40">{{ .ConfigText }}</textarea>
+
+    <label for="entry-list">Lista de Inscriptos</label>
+    <textarea readonly id="entry-list" name="entry-list" class="form-control md-textarea text-area" rows="40">{{ .EntryListText }}</textarea>
+{{ end }}

@@ -1,0 +1,126 @@
+{{ define "points" }}
+    {{ $defaultPoints := .DefaultPoints }}
+    {{ $isRaceWeekend := .IsRaceWeekend }}
+
+    <div class="mt-5 points-parent">
+
+
+        {{ if and .IsEditing $.Points }}
+
+            {{ $pointsCount := int64 1 }}
+
+            {{ range $index, $points := $.Points.Places }}
+                <div class="form-group row points-place">
+                    <label for="Points.Place" class="col-sm-3 col-form-label">
+                        {{ $pointsCount }}{{ ordinal $pointsCount }} Lugar
+                    </label>
+
+                    <div class="col-sm-9">
+                        <input type="number" class="form-control init-empty-non-race" name="Points.Place"
+                               placeholder="Puntos" value="{{ index $.Points.Places (sub $pointsCount 1) }}" data-default-value="{{ index $.Points.Places (sub $pointsCount 1) }}">
+                    </div>
+                </div>
+
+                {{ $pointsCount = add $pointsCount 1 }}
+            {{ end }}
+        {{ else }}
+            <div class="form-group row points-place">
+                <label for="Points.Place" class="col-sm-3 col-form-label">
+                    1er Lugar
+                </label>
+
+                <div class="col-sm-9">
+                    <input type="number" class="form-control init-empty-non-race" name="Points.Place"
+                           placeholder="Puntos" value="{{ index $defaultPoints.Places 0 }}" data-default-value="{{ index $defaultPoints.Places 0 }}">
+                </div>
+            </div>
+        {{ end }}
+    </div>
+
+    <input type="hidden" class="totalNumPoints" name="NumPoints" value="{{ with $.Points.Places }}{{ len $.Points.Places }}{{ else }}0{{ end }}">
+
+    <div class="row">
+        <div class="col-sm-9 offset-sm-3">
+            <small>
+                Una vez agregados, los Puntos de Campeonato no se pueden quitar. Los resultados de los Campeonatos se calculan al cargar la página (lo que
+                permite mucha más flexibilidad para hacer mejoras), así que los puntos de campeonato anteriores deben estar disponibles para eso. Si querés desactivar
+                los puntos por completo para esta clase, poné todos los valores de arriba en cero. Esto afectará los puntos de todos los participantes que corrieron en esta
+                clase en este Campeonato.
+            </small>
+        </div>
+    </div>
+    <hr>
+
+    <h5 class="mb-0">Modificadores Positivos</h5>
+    <p><small class="font-italic">¡Estos modificadores suman puntos a los pilotos por ciertas acciones!</small></p>
+
+    <div class="form-group row">
+        <label for="Points.BestLap" class="col-sm-3 col-form-label">Mejor Vuelta</label>
+
+        <div class="col-sm-9">
+            <input type="number" class="form-control init-empty-non-race" name="Points.BestLap"
+                   placeholder="Puntos" value="{{ with $.Points.BestLap }}{{ . }}{{ else }}0{{ end }}" data-default-value="{{ with $.Points.BestLap }}{{ . }}{{ else }}0{{ end }}">
+        </div>
+    </div>
+
+    {{ if not $isRaceWeekend }}
+        <div class="form-group row">
+            <label for="Points.PolePosition" class="col-sm-3 col-form-label">Pole Position</label>
+
+
+            <div class="col-sm-9">
+                <input type="number" class="form-control" name="Points.PolePosition"
+                       placeholder="Puntos" value="{{ with $.Points.PolePosition }}{{ . }}{{ else }}0{{ end }}">
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label for="Points.SecondRaceMultiplier" class="col-sm-3 col-form-label">Multiplicador de la Segunda Carrera</label>
+
+            <div class="col-sm-9">
+                <input type="number" class="form-control" name="Points.SecondRaceMultiplier" step="0.01"
+                       placeholder="Multiplicador" value="{{ with $.Points.SecondRaceMultiplier }}{{ . }}{{ else }}0{{ end }}">
+
+                <small>
+                    Este multiplicador se aplica al otorgar puntos en cualquier evento que use la función de "Posiciones de Grilla
+                    Invertidas". Si ocurre una segunda carrera, los puntos otorgados a cada jugador se multiplicarán por el multiplicador indicado.
+
+                    Para desactivar los puntos de una segunda carrera, poné este valor en 0. ¡El valor puede ser negativo si querés!
+                </small>
+            </div>
+        </div>
+    {{ end }}
+
+    <hr>
+
+    <h5 class="mb-0">Modificadores Negativos</h5>
+    <p><small class="font-italic">¡Estos modificadores quitan puntos a los pilotos por ciertas acciones (solo en sesiones de carrera)!</small></p>
+
+    <div class="form-group row">
+        <label for="Points.CollsionWithDriver" class="col-sm-3 col-form-label">Choque con Otro Piloto</label>
+
+        <div class="col-sm-9">
+            <input type="number" class="form-control init-empty-non-race" name="Points.CollisionWithDriver"
+                   placeholder="Puntos" value="{{ with $.Points.CollisionWithDriver }}{{ . }}{{ else }}0{{ end }}" data-default-value="{{ with $.Points.CollisionWithDriver }}{{ . }}{{ else }}0{{ end }}">
+        </div>
+    </div>
+
+    <div class="form-group row">
+        <label for="Points.CollisionWithEnv" class="col-sm-3 col-form-label">Choque con el Entorno</label>
+
+        <div class="col-sm-9">
+            <input type="number" class="form-control init-empty-non-race" name="Points.CollisionWithEnv"
+                   placeholder="Puntos" value="{{ with $.Points.CollisionWithEnv }}{{ . }}{{ else }}0{{ end }}" data-default-value="{{ with $.Points.CollisionWithEnv }}{{ . }}{{ else }}0{{ end }}">
+        </div>
+    </div>
+
+    <div class="form-group row">
+        <label for="Points.CutTrack" class="col-sm-3 col-form-label">Corte de Circuito</label>
+
+        <div class="col-sm-9">
+            <input type="number" class="form-control init-empty-non-race" name="Points.CutTrack"
+                   placeholder="Puntos" value="{{ with $.Points.CutTrack }}{{ . }}{{ else }}0{{ end }}" data-default-value="{{ with $.Points.CutTrack }}{{ . }}{{ else }}0{{ end }}">
+        </div>
+    </div>
+
+{{ end }}

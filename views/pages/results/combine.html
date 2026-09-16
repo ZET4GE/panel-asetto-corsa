@@ -1,0 +1,21 @@
+{{/* gotype: github.com/JustaPenguin/assetto-server-manager.combineResultsTemplateVars */}}
+
+{{ define "title" }}Combinar Resultados{{ end }}
+
+{{ define "content" }}
+    <h3>Combinar Resultados</h3>
+
+    <form method="post" action="/results/combine">
+
+        <select multiple required class="form-control" name="CombineResults" size="15">
+            {{ range $i, $result := .Results }}
+                <option value="{{ $result.SessionFile }}">{{ prettify $result.Type.String false }} en {{ prettify $result.TrackName false }} {{ with $result.TrackConfig }} - {{ prettify . true }} {{ end }} ({{ $result.GetDate }})</option>
+            {{ end }}
+        </select>
+
+        <button class="btn btn-primary float-right mt-2" type="submit">Combinar Resultados Seleccionados</button>
+
+    </form>
+
+    <div class="clearfix"></div>
+{{ end }}

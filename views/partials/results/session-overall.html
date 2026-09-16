@@ -1,0 +1,319 @@
+{{ define "session-overall" }}
+
+    {{ $sessionResults := .sessionResults }}
+    {{ $account := .account }}
+    {{ $driversHaveTeams := $sessionResults.DriversHaveTeams }}
+    {{ $sessionHasHandicaps := $sessionResults.HasHandicaps }}
+
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped">
+            {{ if eq "RACE" $sessionResults.Type.OriginalString }}
+
+                <tr>
+                    <th>#</th>
+                    <th>Nombre</th>
+                    {{ if $driversHaveTeams }}
+                        <th>Equipo</th>
+                    {{ end }}
+                    <th>Auto</th>
+                    <th>Tiempo Total de Carrera</th>
+                    <th>Núm. de Vueltas</th>
+                    <th>Mejor Vuelta</th>
+                    <th><span data-toggle="tooltip" title="Las vueltas contribuyen a este promedio si no tienen cortes, no son la vuelta 1, y el tiempo de vuelta está dentro del 107% del tiempo de vuelta promedio hasta el momento">Vuelta Limpia Promedio</span></th>
+                    {{ if $sessionHasHandicaps }}
+                        <th>Hándicaps</th>
+                    {{ end }}
+                    <th>Choques</th>
+                    {{ if WriteAccess }}
+                        <th>Penalizaciones</th>
+                    {{ end }}
+                </tr>
+
+                {{ range $pos, $result := $sessionResults.Result}}
+                    {{ with $result.DriverGUID }}
+                        <tr {{ if eq $account.GUID $result.DriverGUID }}style="font-weight: bold"{{ end }}>
+                            <td>{{ add $pos 1 }}</td>
+                            <td class="driver-link" data-href="#{{ $result.DriverGUID }}-{{ $result.CarID }}">
+                                {{ driverName $result.DriverName }}
+
+                                {{ if $result.HasPenalty }}
+                                    <span class="badge badge-danger">Penalización de Tiempo: {{ $result.PenaltyTime }}</span>
+                                {{ end }}
+
+                                {{ if $result.Disqualified }}
+                                    <span class="badge badge-danger">Descalificado</span>
+                                {{ end }}
+                            </td>
+
+                            {{ if $driversHaveTeams }}
+                                <td>{{ $sessionResults.GetTeamName $result.DriverGUID }}</td>
+                            {{ end }}
+                            <td>{{ prettify $result.CarModel true }}</td>
+                            <td>{{ formatDuration ($sessionResults.GetTime $result.TotalTime $result.DriverGUID $result.CarModel true) false }}</td>
+                            <td>{{ $sessionResults.GetNumLaps $result.DriverGUID $result.CarModel }} vueltas /
+                                {{ $sessionResults.GetCuts $result.DriverGUID $result.CarModel }} cortes</td>
+                            <td>
+                                {{ $bestLap := $sessionResults.GetTime $result.BestLap $result.DriverGUID $result.CarModel false }}
+                                {{  formatDuration $bestLap true }}<br>
+                                {{ if gt $bestLap 0 }}
+                                    <small class="text-muted">Neumático: {{ $result.BestLapTyre $sessionResults }}</small>
+                                {{ end }}
+                            </td>
+                            <td>{{ formatDuration ($sessionResults.GetAverageLapTime $result.DriverGUID $result.CarModel) true }}</td>
+
+                            {{ if $sessionHasHandicaps }}
+                                <td>
+                                    {{ $hasHandicap := false }}
+
+                                    <div class="small">
+                                        {{ if gt $result.BallastKG 0 }}
+                                            {{ $hasHandicap = true }}
+                                            Lastre:
+                                            {{ $result.BallastKG }} kg<br>
+                                        {{ end }}
+
+                                        {{ if gt $result.Restrictor 0 }}
+                                            {{ $hasHandicap = true }}
+                                            Restrictor:
+                                            {{ $result.Restrictor }}%<br>
+                                        {{ end }}
+                                    </div>
+
+                                    {{ if not $hasHandicap }}
+                                        n/d
+                                    {{ end }}
+                                </td>
+                            {{ end }}
+
+                            <td>{{ $sessionResults.GetCrashes $result.DriverGUID $result.CarModel }}</td>
+
+                            {{ if WriteAccess }}
+                                <td>
+                                    <button type="button" class="btn btn-warning btn-sm" data-placement="left"
+                                       data-toggle="popover" title="Detalles de Penalización" data-html="true"
+                                        id="result-{{ sha1sum $result.DriverGUID }}-{{ $result.CarModel }}-{{ $sessionResults.SessionFile }}"
+                                    >
+                                        Penalizaciones
+                                    </button>
+
+                                    <div id="popover-content-result-{{ sha1sum $result.DriverGUID }}-{{ $result.CarModel }}-{{ $sessionResults.SessionFile }}" style="display: none;">
+                                        <form action='/penalties/{{ $sessionResults.SessionFile }}/{{ $result.DriverGUID }}?model={{ $result.CarModel }}' method='POST'>
+                                            <div class='form-group'>
+                                                <label for='time-penalty'>Penalización de Tiempo (segundos)</label>
+                                                <input type='number' class='form-control' name='time-penalty' id='time-penalty' placeholder='0' step='0.1'>
+                                                <small class='form-text text-muted'>Si se pone en 0 el piloto será descalificado.</small>
+                                            </div>
+
+                                            <button type='submit' name='action' value='add' class='btn btn-warning'>Agregar Penalización</button>
+                                            <button type='submit' name='action' value='remove' class='btn btn-primary'>Quitar Penalización</button>
+                                        </form>
+
+                                        {{ if AdminAccess }}
+                                            <form action="/blacklist" method="POST">
+                                                <input type="text" class="d-none" name="blacklist" id="blacklist" value="{{ $result.DriverGUID }}">
+
+                                                <button type='submit' name='type' value="single" class='btn btn-danger w-100 mt-1'>Poner Piloto en Lista Negra</button>
+                                            </form>
+                                        {{ end }}
+                                    </div>
+                                </td>
+                            {{ end }}
+                        </tr>
+                    {{ end }}
+                {{ end }}
+            {{ else if eq "QUALIFY" $sessionResults.Type.OriginalString }}
+                <tr>
+                    <th>#</th>
+                    <th>Nombre</th>
+                    {{ if $driversHaveTeams }}
+                        <th>Equipo</th>
+                    {{ end }}
+                    <th>Auto</th>
+                    <th>Tiempo de Clasificación</th>
+                    <th>Vuelta Promedio</th>
+                    <th>Vueltas</th>
+                    {{ if $sessionHasHandicaps }}
+                        <th>Hándicaps</th>
+                    {{ end }}
+                    {{ if WriteAccess }}
+                        <th>Penalizaciones</th>
+                    {{ end }}
+                </tr>
+
+                {{ range $pos, $result := $sessionResults.Result }}
+                    {{ with $result.DriverGUID }}
+                        <tr {{ if eq $account.GUID $result.DriverGUID }}style="font-weight: bold"{{ end }}>
+                            <td>{{ add $pos 1 }}</td>
+                            <td class="driver-link" data-href="#{{ $result.DriverGUID }}-{{ $result.CarID }}">{{ driverName $result.DriverName }}
+                                {{ if $result.HasPenalty }} <span class="badge badge-danger">Penalización de Tiempo: {{ $result.PenaltyTime }}</span> {{ end }}
+                                {{ if $result.Disqualified }} <span class="badge badge-danger">Descalificado</span> {{ end }}</td>
+                            {{ if $driversHaveTeams }}
+                                <td>{{ $sessionResults.GetTeamName $result.DriverGUID }}</td>
+                            {{ end }}
+                            <td>{{ prettify $result.CarModel true }}</td>
+                            <td>
+                                {{ $bestLap := $sessionResults.GetTime $result.BestLap $result.DriverGUID $result.CarModel true }}
+                                {{ formatDuration $bestLap true }}<br>
+                                {{ if gt $bestLap 0 }}
+                                    <small class="text-muted">Neumático: {{ $result.BestLapTyre $sessionResults }}</small>
+                                {{ end }}
+                            </td>
+                            <td>{{ formatDuration ($sessionResults.GetAverageLapTime $result.DriverGUID $result.CarModel) true }}</td>
+                            <td>{{ $sessionResults.GetNumLaps $result.DriverGUID $result.CarModel }} vueltas /
+                                {{ $sessionResults.GetCuts $result.DriverGUID $result.CarModel }} cortes</td>
+                            {{ if $sessionHasHandicaps }}
+                                <td>
+                                    {{ $hasHandicap := false }}
+
+                                    <div class="small">
+                                        {{ if gt $result.BallastKG 0 }}
+                                            {{ $hasHandicap = true }}
+                                            Lastre:
+                                            {{ $result.BallastKG }} kg<br>
+                                        {{ end }}
+
+                                        {{ if gt $result.Restrictor 0 }}
+                                            {{ $hasHandicap = true }}
+                                            Restrictor:
+                                            {{ $result.Restrictor }}%<br>
+                                        {{ end }}
+                                    </div>
+
+                                    {{ if not $hasHandicap }}
+                                        n/d
+                                    {{ end }}
+                                </td>
+                            {{ end }}
+                            {{ if WriteAccess }}
+                                <td>
+                                    <button type="button" class="btn btn-warning btn-sm" data-placement="left"
+                                            data-toggle="popover" title="Detalles de Penalización" data-html="true"
+                                            id="result-{{ $result.DriverGUID }}-{{ $result.CarModel }}-{{ $sessionResults.SessionFile }}"
+                                    >Penalizaciones</button>
+
+                                    <div id="popover-content-result-{{ $result.DriverGUID }}-{{ $result.CarModel }}-{{ $sessionResults.SessionFile }}" style="display: none;">
+                                        <form action='/penalties/{{ $sessionResults.SessionFile }}/{{ $result.DriverGUID }}?model={{ $result.CarModel }}' method='POST'>
+                                            <div class='form-group'>
+                                                <label for='time-penalty'>Penalización de Tiempo (segundos)</label>
+                                                <input type='number' class='form-control' name='time-penalty' id='time-penalty' placeholder='0' step='0.1'>
+                                                <small class='form-text text-muted'>Si se pone en 0 el piloto será descalificado.</small>
+                                            </div>
+
+                                            <button type='submit' name='action' value='add' class='btn btn-warning'>Agregar Penalización</button>
+                                            <button type='submit' name='action' value='remove' class='btn btn-primary'>Quitar Penalización</button>
+                                        </form>
+
+                                        {{ if AdminAccess }}
+                                            <form action="/blacklist" method="POST">
+                                                <input type="text" class="d-none" name="blacklist" id="blacklist" value="{{ $result.DriverGUID }}">
+
+                                                <button type='submit' name='type' value="single" class='btn btn-danger w-100 mt-1'>Poner Piloto en Lista Negra</button>
+                                            </form>
+                                        {{ end }}
+                                    </div>
+                                </td>
+                            {{ end }}
+                        </tr>
+                    {{ end }}
+                {{ end }}
+            {{ else if eq "PRACTICE" $sessionResults.Type.OriginalString }}
+                <tr>
+                    <th>#</th>
+                    <th>Nombre</th>
+                    {{ if $driversHaveTeams }}
+                        <th>Equipo</th>
+                    {{ end }}
+                    <th>Auto</th>
+                    <th>Mejor Vuelta de Práctica</th>
+                    <th>Vuelta Promedio</th>
+                    <th>Vueltas</th>
+                    {{ if $sessionHasHandicaps }}
+                        <th>Hándicaps</th>
+                    {{ end }}
+                    {{ if WriteAccess }}
+                        <th>Penalizaciones</th>
+                    {{ end }}
+                </tr>
+
+                {{ range $pos, $result := $sessionResults.Result }}
+                    {{ with $result.DriverGUID }}
+                        <tr {{ if eq $account.GUID $result.DriverGUID }}style="font-weight: bold"{{ end }}>
+                            <td>{{ add $pos 1 }}</td>
+                            <td class="driver-link" data-href="#{{ $result.DriverGUID }}-{{ $result.CarID }}">{{ driverName $result.DriverName }}
+                                {{ if $result.HasPenalty }} <span class="badge badge-danger">Penalización de Tiempo: {{ $result.PenaltyTime }}</span> {{ end }}
+                                {{ if $result.Disqualified }} <span class="badge badge-danger">Descalificado</span> {{ end }}</td>
+                            {{ if $driversHaveTeams }}
+                                <td>{{ $sessionResults.GetTeamName $result.DriverGUID }}</td>
+                            {{ end }}
+                            <td>{{ prettify $result.CarModel true }}</td>
+                            <td>
+                                {{ $bestLap := $sessionResults.GetTime $result.BestLap $result.DriverGUID $result.CarModel true }}
+                                {{ formatDuration $bestLap true }}<br>
+                                {{ if gt $bestLap 0 }}
+                                    <small class="text-muted">Neumático: {{ $result.BestLapTyre $sessionResults }}</small>
+                                {{ end }}
+                            </td>
+                            <td>{{ formatDuration ($sessionResults.GetAverageLapTime $result.DriverGUID $result.CarModel) true }}</td>
+                            <td>{{ $sessionResults.GetNumLaps $result.DriverGUID $result.CarModel }} vueltas /
+                                {{ $sessionResults.GetCuts $result.DriverGUID $result.CarModel }} cortes</td>
+
+                            {{ if $sessionHasHandicaps }}
+                                <td>
+                                    {{ $hasHandicap := false }}
+
+                                    <div class="small">
+                                        {{ if gt $result.BallastKG 0 }}
+                                            {{ $hasHandicap = true }}
+                                            Lastre:
+                                            {{ $result.BallastKG }} kg<br>
+                                        {{ end }}
+
+                                        {{ if gt $result.Restrictor 0 }}
+                                            {{ $hasHandicap = true }}
+                                            Restrictor:
+                                            {{ $result.Restrictor }}%<br>
+                                        {{ end }}
+                                    </div>
+
+                                    {{ if not $hasHandicap }}
+                                        n/d
+                                    {{ end }}
+                                </td>
+                            {{ end }}
+
+                            {{ if WriteAccess }}
+                                <td>
+                                    <button type="button" class="btn btn-warning btn-sm" data-placement="left"
+                                            data-toggle="popover" title="Detalles de Penalización" data-html="true"
+                                            id="result-{{ $result.DriverGUID }}-{{ $result.CarModel }}-{{ $sessionResults.SessionFile }}"
+                                    >Penalizaciones</button>
+
+                                    <div id="popover-content-result-{{ $result.DriverGUID }}-{{ $result.CarModel }}-{{ $sessionResults.SessionFile }}" style="display: none;">
+                                        <form action='/penalties/{{ $sessionResults.SessionFile }}/{{ $result.DriverGUID }}?model={{ $result.CarModel }}' method='POST'>
+                                            <div class='form-group'>
+                                                <label for='time-penalty'>Penalización de Tiempo (segundos)</label>
+                                                <input type='number' class='form-control' name='time-penalty' id='time-penalty' placeholder='0' step='0.1'>
+                                                <small class='form-text text-muted'>Si se pone en 0 el piloto será descalificado.</small>
+                                            </div>
+
+                                            <button type='submit' name='action' value='add' class='btn btn-warning'>Agregar Penalización</button>
+                                            <button type='submit' name='action' value='remove' class='btn btn-primary'>Quitar Penalización</button>
+                                        </form>
+
+                                        {{ if AdminAccess }}
+                                            <form action="/blacklist" method="POST">
+                                                <input type="text" class="d-none" name="blacklist" id="blacklist" value="{{ $result.DriverGUID }}">
+
+                                                <button type='submit' name='type' value="single" class='btn btn-danger w-100 mt-1'>Poner Piloto en Lista Negra</button>
+                                            </form>
+                                        {{ end }}
+                                    </div>
+                                </td>
+                            {{ end }}
+                        </tr>
+                    {{ end }}
+                {{ end }}
+            {{ end }}
+        </table>
+    </div>
+{{ end }}

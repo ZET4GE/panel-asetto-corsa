@@ -1,0 +1,232 @@
+{{/* gotype: github.com/JustaPenguin/assetto-server-manager.championshipSignUpFormTemplateVars */}}
+
+{{ define "title" }}{{ $.Championship.Name }}{{ end }}
+
+{{ define "content" }}
+    {{ $championship := $.Championship }}
+    <h1 class="text-center">
+        {{ $championship.Name }}
+    </h1>
+
+    {{ if $championship.ACSR }}
+        <div class="text-center">
+            <em>
+                Un Campeonato de <a href="https://acsr.assettocorsaservers.com">Assetto Corsa Skill Rating</a>
+            </em>
+        </div>
+    {{ end }}
+
+    {{ with $championship.Info }}
+        <div class="card mt-3 border-secondary">
+            <div class="card-header">
+                <strong>Sobre el Campeonato</strong>
+            </div>
+
+            <div class="card-body">
+                {{ $championship.Info }}
+
+                <div class="clearfix"></div>
+            </div>
+        </div>
+    {{ end }}
+
+    <form action="/championship/{{ $championship.ID.String }}/sign-up" method="post" id="championship-signup-form" data-safe-submit>
+
+        <div class="card mt-3 border-secondary">
+            <div class="card-header">
+                <strong>Tus Datos</strong>
+            </div>
+
+            <div class="card-body">
+
+                {{ with $.ValidationError }}
+                    <div class="alert alert-danger">
+                        {{ . }}
+                    </div>
+                {{ end }}
+
+                <div class="form-group row">
+                    <label for="Name" class="col-sm-4 col-form-label">Nombre</label>
+
+                    <div class="col-sm-8">
+                        <input type="text" class="form-control" id="Name" name="Name" required
+                               placeholder="Jimmy Bob" value="{{ $.FormData.Name }}">
+                    </div>
+                </div>
+
+                {{ if $championship.SignUpForm.AskForTeam }}
+                    <div class="form-group row">
+                        <label for="Team" class="col-sm-4 col-form-label">Equipo</label>
+
+                        <div class="col-sm-8">
+                            <input type="text" class="form-control" id="Team" name="Team"
+                                   placeholder="El Equipo Veloz" value="{{ $.FormData.Team }}">
+
+                            <small>Podés dejar el nombre del equipo en blanco.</small>
+                        </div>
+                    </div>
+                {{ end }}
+
+                <div class="form-group row">
+                    <label for="GUID" class="col-sm-4 col-form-label">Steam GUID</label>
+
+                    <div class="col-sm-8">
+                        <input type="text" class="form-control acsrGUID" id="GUID" name="GUID"
+                               placeholder="" value="{{ .FormData.GUID }}" {{ if .LockSteamGUID }} readonly{{ end }}>
+                        {{ if not .LockSteamGUID }}
+                            <small>
+                                Si no sabés tu Steam GUID, podés <a href="/championship/{{.ChampionshipTemplateVars.RaceTemplateVars.Championship.ID.String }}/sign-up/steam">Iniciar sesión con Steam</a>
+                                para completarlo automáticamente.
+                            </small>
+                        {{ end }}
+                    </div>
+                </div>
+
+                {{ if $championship.SignUpForm.AskForEmail }}
+                    <div class="form-group row">
+                        <label for="Email" class="col-sm-4 col-form-label">Correo Electrónico</label>
+
+                        <div class="col-sm-8">
+                            <input type="email" class="form-control" id="Email" name="Email"
+                                   placeholder="jimmy@bob.com" required value="{{ $.FormData.Email }}">
+
+                        </div>
+                    </div>
+                {{ end }}
+
+                {{ if ne $.RecaptchaSiteKey "" }}
+                    <div class="form-group row">
+                        <div class="col-sm-8 offset-sm-4">
+                            <div class="g-recaptcha" data-sitekey="{{ $.RecaptchaSiteKey }}"></div>
+                        </div>
+                    </div>
+                {{ end }}
+            </div>
+        </div>
+
+        {{ if not $championship.SignUpForm.HideCarChoice }}
+            <div class="card mt-3 border-secondary" id="entrants">
+                <div class="card-header">
+                    <strong>Tu Auto</strong>
+                </div>
+
+                <div class="card-body row">
+                    <div class="col-sm-8">
+                        <div class="form-group row">
+                            <label for="Car" class="col-sm-3 col-form-label">Auto</label>
+
+                            <div class="col-sm-9">
+                                <select name="Car" id="Car" class="form-control entryListCar">
+                                    {{ range $index, $class := $championship.Classes }}
+                                        <optgroup label="{{ $class.Name }}">
+                                            {{ range $index, $car := $class.ValidCarIDs }}
+                                                <option value="{{ $car }}" {{ if eq $.FormData.Car $car }}selected="selected"{{ end }}>{{ prettify $car true }}</option>
+                                            {{ end }}
+                                        </optgroup>
+                                    {{ end }}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label for="Skin" class="col-sm-3 col-form-label">Skin</label>
+
+                            <div class="col-sm-9">
+                                <select name="Skin" id="Skin" class="form-control entryListSkin">
+                                    {{ with $.FormData.Skin }}
+                                        <option value="{{ . }}" selected="selected">{{ prettify . true }}</option>
+                                    {{ end }}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-4">
+                        <img class="img img-fluid entryListCarPreview" src="/static/img/no-preview-car.png" alt="Vista Previa del Auto" id="CarPreview">
+                    </div>
+                </div>
+            </div>
+        {{ end }}
+
+        {{ if gt (len $championship.SignUpForm.ExtraFields) 0 }}
+            <div class="card mt-3 border-secondary" id="entrants">
+                <div class="card-header">
+                    <strong>Información Extra</strong>
+                </div>
+
+                <div class="card-body">
+                    <p>Los organizadores del campeonato también pidieron la siguiente información.</p>
+
+                    {{ range $index, $question := $championship.SignUpForm.ExtraFields }}
+                        <div class="form-group row">
+                            <label for="Question.{{ $index }}" class="col-sm-4 col-form-label">{{ $question }}</label>
+
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control" id="Question.{{ $index }}" name="Question.{{ $index }}"
+                                       placeholder="" value="{{ index $.FormData.Questions $question }}">
+                            </div>
+                        </div>
+                    {{ end }}
+                </div>
+            </div>
+        {{ end }}
+
+
+        {{ if $championship.ACSR }}
+            <div class="card mt-3">
+                <div class="card-header">
+                    <strong>Campeonato de Assetto Corsa Skill Rating</strong>
+                </div>
+                <div class="card-body">
+                    <p>
+                        Este es un Campeonato de <a target="_blanK" href="https://acsr.assettocorsaservers.com">ACSR</a>.
+                        Eso significa que cuando te inscribas en este Campeonato, se van a enviar los siguientes datos a ACSR:
+                    </p>
+                    <ul>
+                        <li>Tu Nombre, tal como lo pusiste en el formulario de arriba (anonimizado si es posible, por ejemplo "Alan Turing" pasaría a ser "Alan T.")</li>
+                        <li>Una versión anonimizada de tu Steam GUID</li>
+                        <li>Todos los resultados de Carrera, Clasificación y Práctica, y las Posiciones del Campeonato</li>
+                    </ul>
+
+                    <p>Al inscribirte en este Campeonato, aceptás que estos datos puedan compartirse con ACSR.</p>
+
+                    {{ if or $championship.EnableACSRSkillGate $championship.EnableACSRSafetyGate }}
+                        <p>Necesitás cumplir con las siguientes calificaciones mínimas de ACSR para unirte a este Campeonato:</p>
+
+                        {{ if $championship.EnableACSRSkillGate }}
+                            <span data-toggle="tooltip" title="Habilidad" class="badge badge-primary acsr-badge--skill">{{ $championship.ACSRSkillGate }}</span>
+                        {{ end }}
+                        {{ if $championship.EnableACSRSafetyGate }}
+                            <span data-toggle="tooltip" title="Seguridad" class="badge badge-success acsr-badge--safety">{{ $championship.ACSRSafetyGate }} </span>
+                        {{ end }}
+
+                        <div class="mt-3 mb-3">Tu Calificación:</div>
+
+                        <div id="acsr-rating-container">
+                            <!-- Rating information is appended by JS! -->
+                            <span class="text-danger">¡Desconocida! Ingresá tu GUID en el campo de Steam GUID de arriba.</span>
+                        </div>
+                    {{ end }}
+                </div>
+            </div>
+        {{ end }}
+
+        <div class="mt-5">
+            <button type="submit"
+                    {{ if and ($championship.ACSR) (or $championship.EnableACSRSkillGate $championship.EnableACSRSafetyGate) }}
+                        disabled id="register-for-championship"
+                    {{ end }}
+                    class="btn btn-success float-right">Registrarme</button>
+        </div>
+    </form>
+
+
+    <script type="text/javascript">
+        const availableCars = {{ jsonEncode .CarOpts.AsMap }};
+        const ChampionshipID = {{ .Championship.ID.String }};
+    </script>
+
+    {{ if ne $.RecaptchaSiteKey "" }}
+        <script src='https://www.google.com/recaptcha/api.js'></script>
+    {{ end }}
+{{ end }}

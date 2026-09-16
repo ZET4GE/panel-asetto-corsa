@@ -1,0 +1,93 @@
+{{/* gotype: github.com/JustaPenguin/assetto-server-manager.createAccountTemplateVars */}}
+
+{{ define "title" }}
+    {{ if $.IsEditing }}Editar{{ else }}Agregar{{ end }} una Cuenta
+{{ end }}
+
+{{ define "content" }}
+    <div class="card">
+        <div class="card-header">
+            {{ if $.IsEditing }}Editar{{ else }}Agregar{{ end }} una Cuenta
+        </div>
+
+        <div class="card-body">
+            <form method="post" {{ if $.IsEditing }}action="/accounts/edit/{{ .Account.ID.String }}"{{ else }}action="/accounts/new"{{ end }}>
+                <div class="form-group row">
+                    <label for="Username" class="col-sm-3 col-form-label">Usuario</label>
+
+                    <div class="col-sm-9">
+                        <input
+                            type="text"
+                            id="Username"
+                            name="Username"
+                            class="form-control"
+                            placeholder="usuario"
+                            {{ with .Account.Name }}
+                                value="{{ . }}"
+                            {{ end }}
+                        >
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <label for="Group" class="col-sm-3 col-form-label">Grupo</label>
+
+                    <div class="col-sm-9">
+                        <select class="form-control" id="Group" name="Group" {{ if and (eq .Account.Name "acserver") $.BaseTemplateVars.IsHosted }}disabled{{ end }}>
+                            <option value="read" {{ if eq .Account.Group "read" }}selected="selected"{{ end }}>Lectura - Ver carreras, contenido y campeonatos</option>
+                            <option value="write" {{ if eq .Account.Group "write" }}selected="selected"{{ end }}>Escritura - Ver y crear carreras, contenido y campeonatos</option>
+                            <option value="delete" {{ if eq .Account.Group "delete" }}selected="selected"{{ end }}>Eliminar - Ver, crear y eliminar carreras, contenido y campeonatos</option>
+                            <option value="admin" {{ if eq .Account.Group "admin" }}selected="selected"{{ end }}>Administrador - Acceso total</option>
+                            <option value="no_access" {{ if eq .Account.Group "no_access" }}selected="selected"{{ end }}>Sin Acceso - el usuario no puede acceder a nada.</option>
+                        </select>
+
+                        <small>Tené en cuenta que los Grupos son por instancia de Server Manager. En un entorno Multi-Servidor, podés configurar distintos grupos por servidor para cada usuario.</small>
+                    </div>
+                </div>
+
+
+                {{ if gt (len .Account.Groups) 1 }}
+                    <div class="form-group row">
+                        <label for="UpdateGroupForAllServers" class="col-sm-3 col-form-label">¿Actualizar Grupo en Todos los Servidores?</label>
+
+                        <div class="col-sm-9">
+                            <input type="checkbox"
+                                   id="UpdateGroupForAllServers"
+                                   name="UpdateGroupForAllServers"
+                            ><br>
+
+                            <small>Si está activado, el grupo seleccionado arriba se va a aplicar a la cuenta del usuario en todos los servidores de esta instancia Multi-Servidor.</small>
+                        </div>
+                    </div>
+
+
+                {{ end }}
+
+
+                {{ if $.IsEditing }}
+                    <div class="form-group row">
+                        <label for="DefaultPassword" class="col-sm-3 col-form-label">Restablecer Contraseña</label>
+
+                        <div class="col-sm-9">
+                            <a class="btn btn-primary" href="/accounts/reset-password/{{ .Account.ID.String }}">Restablecer Contraseña</a>
+                        </div>
+                    </div>
+                {{ else }}
+                    <div class="form-group row">
+                        <label for="DefaultPassword" class="col-sm-3 col-form-label">Contraseña</label>
+
+                        <div class="col-sm-9">
+                            <code>{{ .Account.DefaultPassword }}</code><br>
+                            <input type="hidden" name="DefaultPassword" value="{{ .Account.DefaultPassword }}">
+
+                            <small>Esta contraseña se generó automáticamente. Vas a tener que compartirla con la persona para la que estás creando la cuenta. Se le va a pedir que cambie su contraseña la primera vez que inicie sesión.</small>
+                        </div>
+                    </div>
+                {{ end }}
+
+
+                <button class="btn btn-success float-right" type="submit">{{ if $.IsEditing }}Editar{{ else }}Agregar{{ end }} Usuario</button>
+            </form>
+        </div>
+    </div>
+{{ end }}

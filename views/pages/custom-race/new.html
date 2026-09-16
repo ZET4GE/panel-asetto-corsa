@@ -1,0 +1,2095 @@
+{{/* gotype: github.com/JustaPenguin/assetto-server-manager.RaceTemplateVars */}}
+
+{{ define "title" }}
+    {{ if .IsChampionship }}
+        Evento de Campeonato
+    {{ else if .IsRaceWeekend }}
+        Sesión de Fin de Semana de Carrera
+    {{ else }}
+        Carrera Personalizada
+    {{ end }}
+{{ end }}
+
+{{ define "track-options" }}
+    {{ $tracks := .Tracks }}
+    {{ $selectedTrack := .SelectedTrack }}
+
+    {{ range $index, $track := $tracks }}
+        <option value="{{ $track.Name }}" {{ if eq $track.Name $selectedTrack }}selected="selected" {{ end }}
+                data-track-name="{{ $track.Name }}"
+        >
+            {{ $track.PrettyName }}
+        </option>
+    {{ end }}
+{{ end }}
+
+{{ define "content" }}
+    {{ $f := .Current }}
+    {{ $trackInfo := trackInfo $f.Track $f.TrackLayout }}
+
+    <h1 class="text-center">
+        {{ if .IsChampionship }}
+            Evento de Campeonato
+        {{ else if .IsRaceWeekend }}
+            Sesión de Fin de Semana de Carrera
+        {{ else }}
+            Carrera Personalizada
+        {{ end }}
+    </h1>
+
+    {{ if .IsChampionship }}
+        <p>Configurá un Evento para el Campeonato <strong>{{ .Championship.Name }}</strong>.</p>
+    {{ else if .IsRaceWeekend }}
+        <p>Configurá una Sesión para el Fin de Semana de Carrera <strong>{{ .RaceWeekend.Name }}</strong>.</p>
+    {{ end }}
+
+    <form class="race-setup"
+          method="post"
+          {{ if .IsChampionship }}
+              action="/championship/{{ .Championship.ID.String }}/event/submit"
+          {{ else if .IsRaceWeekend }}
+              id="race-weekend-session"
+              action="/race-weekend/{{ .RaceWeekend.ID.String }}/session/submit"
+          {{ else }}
+              action="/custom/new/submit"
+          {{ end }}
+          data-safe-submit
+    >
+
+        <div class="card mt-3 border-secondary">
+            <div class="card-header">
+                <strong>Circuito{{ if not (or .IsChampionship .IsRaceWeekend) }} y Autos {{ end }}</strong>
+
+                {{ if .IsEditing }}
+                    {{ if $.IsChampionship }}
+                        <button class="btn btn-success float-right" name="action" value="saveChampionship" type="submit">Guardar Evento de Campeonato</button>
+                    {{ else if $.IsRaceWeekend }}
+                        <button class="btn btn-success float-right" name="action" value="saveRaceWeekend" type="submit">Guardar Sesión de Fin de Semana de Carrera</button>
+                    {{ else }}
+                        <button type="submit" class="btn btn-success float-right" name="action" value="justSave">Guardar Carrera</button>
+                    {{ end }}
+                {{ end }}
+            </div>
+
+            <div class="card-body">
+                <div class="row mb-5">
+                    <div class="col-sm-8">
+                        <div class="form-group row">
+                            <label for="Track" class="col-sm-3 col-form-label">
+                                Circuito
+                            </label>
+
+                            <div class="col-sm-9">
+                                <select class="form-control" name="Track" id="Track">
+                                    {{ $split := .TrackOpts.Split }}
+
+
+                                    {{ with $split.Stock }}
+                                        <optgroup label="Stock">
+                                            {{ template "track-options" dict "Tracks" . "SelectedTrack" $f.Track }}
+                                        </optgroup>
+                                    {{ end }}
+
+                                    {{ with $split.DLC }}
+                                        <optgroup label="DLC">
+                                            {{ template "track-options" dict "Tracks" . "SelectedTrack" $f.Track }}
+                                        </optgroup>
+                                    {{ end }}
+
+                                    {{ with $split.Mod }}
+                                        <optgroup label="Mod">
+                                            {{ template "track-options" dict "Tracks" . "SelectedTrack" $f.Track }}
+                                        </optgroup>
+                                    {{ end }}
+                                </select>
+                            </div>
+                        </div>
+
+
+                        <div class="form-group row" style="display: none;">
+                            <label for="TrackLayout" class="col-sm-3 col-form-label">
+                                Trazado del Circuito
+                            </label>
+
+                            <div class="col-sm-9">
+                                <select class="form-control" name="TrackLayout" id="TrackLayout">
+                                    {{ range $index, $track := .TrackOpts }}
+                                        {{ range $layoutIndex, $layout := $track.Layouts }}
+                                            {{ $name := $layout }}
+                                            {{ $trackInfo := trackInfo $track.Name $layout }}
+
+                                            {{ with $trackInfo }}
+                                                {{ $name = $trackInfo.Name }}
+                                            {{ end }}
+
+                                            {{ if and (eq $track.Name $f.Track) (eq $layout $f.TrackLayout) }}
+                                                <option value="{{ $track.Name }}:{{ $layout }}:current" data-track-name="{{ $layout }}">{{ $name }}</option>
+                                            {{ else }}
+                                                <option value="{{ $track.Name }}:{{ $layout }}" data-track-name="{{ $layout }}">{{ $name }}</option>
+                                            {{ end }}
+                                        {{ end }}
+                                    {{ end }}
+                                </select>
+                            </div>
+                        </div>
+
+                        {{ with $trackInfo }}
+                            <div class="form-group row">
+                                <label for="PitBoxes" class="col-sm-3 col-form-label">
+                                    Boxes
+                                </label>
+
+                                <div class="col-sm-9 pit-boxes">
+                                    <span id="track-pitboxes">{{ $trackInfo.Pitboxes }}</span>
+                                </div>
+
+                                {{ with $.Championship }}
+                                    <div class="col-sm-12">
+                                        <span id="track-pitboxes-warning" class="text-warning mt-2"
+                                            {{ if not (and ($.IsChampionship) (lt (int $.Championship.NumEntrants) (int $trackInfo.Pitboxes))) }} style="display: none;" {{ end }}
+                                            >Este circuito tiene menos boxes que la cantidad de participantes configurada en el
+                                            {{if $.IsChampionship }}Campeonato{{ else }}Carrera{{end}} actual, por lo tanto no es elegible para ella.</span>
+                                    </div>
+                                {{ end }}
+                            </div>
+                        {{ end }}
+                    </div>
+
+                    <div class="col-sm-4">
+                        <div class="thumb">
+                            <img id="trackImage"
+                                 src="/content/tracks/{{ $f.Track }}/ui{{ with $f.TrackLayout }}/{{.}}{{ end }}/preview.png"
+                                 alt="{{ $f.Track }} {{ $f.TrackLayout }}"
+                                 onerror="this.style.display='none'"
+                            >
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    {{ if not (or .IsChampionship .IsRaceWeekend) }}
+                        <label for="Cars" class="col-sm-2 col-form-label">
+                            Autos
+                        </label>
+                    {{ end }}
+                    <div class="col-sm-10">
+                        {{ if $.IsChampionship }}
+                            <select multiple class="Cars" id="Cars" name="Cars" style="display: none;">
+                                {{ range $index, $car := $.Championship.ValidCarIDs }}
+                                    <option value="{{ $car }}" selected="selected">{{ prettify $car true }}</option>
+                                {{ end }}
+                            </select>
+                        {{ else if $.IsRaceWeekend }}
+                            <select multiple class="Cars" id="Cars" name="Cars" style="display: none;">
+                                {{ with $.RaceWeekend.Championship }}
+                                    {{ range $index, $car := $.RaceWeekend.Championship.ValidCarIDs }}
+                                        <option value="{{ $car }}" selected="selected">{{ prettify $car true }}</option>
+                                    {{ end }}
+                                {{ else }}
+                                    {{ range $index, $car := $.RaceWeekend.GetEntryList.CarIDs }}
+                                        <option value="{{ $car }}" selected="selected">{{ prettify $car true }}</option>
+                                    {{ end }}
+                                {{ end }}
+                            </select>
+                        {{ else }}
+                            {{ template "cars" dict "CarOpts" $.CarOpts "Current" $f }}
+                        {{ end }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{ if and .IsChampionship .ChampionshipHasAtLeastOnceRace }}
+            <div class="card mt-3 border-primary">
+                <div class="card-header text-white bg-primary">
+                    <strong>Guardar Carrera de Campeonato</strong>
+                </div>
+                <div class="card-body">
+                    <p>
+                        La configuración de abajo es idéntica a la configuración de la carrera anterior que acabás de configurar.
+                        Esto quiere decir que si estás conforme con esos ajustes, podés seguir adelante y crear otra carrera.
+
+                        Si no, podés desplazarte hacia abajo y cambiar la configuración de esta carrera.
+                    </p>
+
+                    <p>
+                        Cuando se guarde esta carrera, se va a agregar al Campeonato <strong>{{ .Championship.Name }}</strong>.
+                        Podés agregar más carreras abajo, o, si ya terminaste de crear el campeonato, podés completar su configuración acá.
+                    </p>
+
+                    <div class="float-right">
+                        <button class="btn btn-primary mt-5" data-toggle="tooltip" name="action" value="addAnotherRace" type="submit" title="Guardar esta configuración y luego configurar otra">Agregar otra Carrera</button>
+                        <button class="btn btn-success mt-5" data-toggle="tooltip" name="action" value="saveChampionship" type="submit" title="Guardar esta configuración de carrera y terminar de crear el campeonato">Terminar de Crear Campeonato</button>
+                    </div>
+                </div>
+            </div>
+        {{ end }}
+
+
+        <div class="card mt-3 border-secondary">
+            <div class="card-header">
+                <strong>Sesion{{ if not $.IsRaceWeekend }}es{{ end }}</strong>
+            </div>
+
+            <div class="card-body">
+
+                {{ if $.IsPremium }}
+                    <div class="form-group row" {{ if or $.IsRaceWeekend .IsChampionship }} style="display: none" {{ end }}>
+                        <label class="col-sm-3 col-form-label">Time Attack</label>
+
+                        <div class="col-sm-9">
+                            <input
+                                    type="checkbox"
+                                    class="session-enabler"
+                                    name="TimeAttack"
+                                    id="TimeAttack"
+
+                                    {{ if $f.TimeAttack }}
+                                        checked="checked"
+                                    {{ end }}
+                            >
+
+                            <br><br>
+                            <small>Los eventos de Time Attack van a ejecutar una sesión de Prácticas en bucle y combinar todos los
+                            archivos de resultados. Fuerza el modo bucle y desactiva todas las sesiones excepto Prácticas.
+                            <strong>Recomendamos encarecidamente que uses una lista de inscriptos bloqueada para tener
+                            una experiencia estable con eventos de Time Attack.</strong></small>
+                        </div>
+                    </div>
+                {{ end }}
+
+                {{ if $.IsRaceWeekend }}
+                    <div class="form-group row">
+                        <label for="SessionType" class="col-sm-3 col-form-label">Tipo de Sesión</label>
+
+                        <div class="col-sm-9">
+                            <select name="SessionType" id="SessionType" class="form-control">
+
+
+                                {{ range $index, $sessionType := .AvailableSessions }}
+                                    {{ $hasSession := $f.HasSession $sessionType }}
+
+                                    <option value="{{ $sessionType }}" {{ if $hasSession }}selected="selected"{{ end }}>
+                                        {{ $sessionType.String }}
+                                    </option>
+                                {{ end }}
+                            </select>
+                        </div>
+                    </div>
+
+                    <hr>
+                {{ else }}
+                    <ul class="nav nav-tabs" role="tablist">
+                        {{ range $index, $sessionType := .AvailableSessions }}
+
+                            {{ $hasSession := $f.HasSession $sessionType }}
+
+                            <li class="nav-item">
+                                <a class="nav-link session-nav-link {{ if eq $index 0 }}active{{ end }} {{ if $hasSession }} text-success {{ end }}" id="session-{{ $sessionType }}-tab"
+                                   data-toggle="tab" href="#session-{{ $sessionType }}"
+                                   role="tab"
+                                   aria-controls="{{ $sessionType }}" aria-selected="true">{{ $sessionType.String }}</a>
+                            </li>
+                        {{ end }}
+                    </ul>
+                {{ end }}
+
+
+                <div class="tab-content sessions">
+                    {{ range $index, $sessionType := .AvailableSessions }}
+                        {{ $hasSession := $f.HasSession $sessionType }}
+                        {{ $session := $f.GetSession $sessionType }}
+
+                        <div class="tab-pane fade  {{ if not $.IsRaceWeekend }} {{ if eq $index 0 }}show active{{ end }} pt-5 {{ else if $hasSession }} show active {{ end }}"
+                             id="session-{{ $sessionType }}" role="tabpanel"
+                             aria-labelledby="session-{{ $sessionType }}-tab">
+
+
+                            <div class="form-group row" {{ if $.IsRaceWeekend }} style="display: none" {{ end }}>
+                                <label class="col-sm-3 col-form-label">Habilitada</label>
+
+                                <div class="col-sm-9">
+                                    <input
+                                            type="checkbox"
+                                            class="session-enabler"
+                                            name="{{ $sessionType }}.Enabled"
+                                            id="{{ $sessionType }}.Enabled"
+
+                                            {{ if $hasSession }}
+                                            checked="checked"
+                                            {{ end }}
+                                    >
+
+                                    {{ if eq $sessionType "BOOK" }}
+                                        <br><br>
+                                        <small>Habilitar el Modo Booking implica que no podés configurar una Lista de Inscriptos específica. El servidor va a iniciar con el Modo Pickup deshabilitado y los Participantes van a tener que elegir su auto y librea durante el horario de la sesión de Booking.</small>
+                                    {{ end }}
+                                </div>
+                            </div>
+
+                            <div class="session-details" {{ if not $hasSession }} style="display: none;" {{ end }}>
+                                <div class="form-group row">
+                                    <label for="{{ $sessionType }}.Name" class="col-sm-3 col-form-label">Nombre</label>
+
+                                    <div class="col-sm-9">
+                                        <input type="text" id="{{ $sessionType }}.Name" name="{{ $sessionType }}.Name"
+                                               class="form-control" value="{{ with $session.Name }}{{ . }}{{ else }}{{ $sessionType.String }}{{ end }}">
+
+                                        <small></small>
+                                    </div>
+                                </div>
+
+
+                                {{ if eq $sessionType "RACE" }}
+                                    <div class="form-group row">
+                                        <div class="col-sm-3">
+                                            <select id="TimeOrLaps" class="form-control">
+                                                <option value="Time" {{ if or (ne $session.Time 0) (eq $session.Laps 0) }} selected="selected" {{ end }}>Tiempo</option>
+                                                <option value="Laps" {{ if ne $session.Laps 0 }} selected="selected" {{ end }}>Vueltas</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="col-sm-9" id="RaceTime" {{ if not (or (ne $session.Time 0) (eq $session.Laps 0)) }}style="display: none;"{{ end }}>
+                                            <input
+                                                    type="number"
+                                                    id="Race.Time"
+                                                    name="Race.Time"
+                                                    class="form-control"
+                                                    {{ if and (eq $session.Time 0) (eq $session.Laps 0) }}
+                                                        value="15"
+                                                    {{ else }}
+                                                        value="{{ $session.Time }}"
+                                                    {{ end }}
+
+
+                                                    step="1"
+                                            >
+
+                                            <small>Duración de la sesión en minutos</small>
+                                        </div>
+
+
+                                        <div class="col-sm-9" id="RaceLaps" {{ if eq $session.Laps 0 }}style="display: none;"{{ end }}>
+                                            <input
+                                                    type="number"
+                                                    id="Race.Laps"
+                                                    name="Race.Laps"
+                                                    class="form-control"
+                                                    value="{{ $session.Laps }}"
+
+
+                                                    step="1"
+                                            >
+
+                                            <small>Cantidad de vueltas en la carrera</small>
+                                        </div>
+                                    </div>
+                                {{ else }}
+                                    <div class="form-group row">
+                                        <label for="{{ $sessionType }}.Time"
+                                               class="col-sm-3 col-form-label">Tiempo</label>
+
+
+                                        <div class="col-sm-9">
+                                            <input
+                                                    type="number"
+                                                    id="{{ $sessionType }}.Time"
+                                                    name="{{ $sessionType }}.Time"
+                                                    class="form-control"
+                                                    value="{{ with $session.Time }}{{ . }}{{ else }}15{{ end }}"
+                                                    step="1"
+                                            >
+
+                                            <small>Duración de la sesión en minutos</small>
+                                        </div>
+                                    </div>
+
+                                {{ end }}
+
+                                {{ if and (ne $sessionType "BOOK") (not $.IsRaceWeekend) }}
+
+                                    <div class="form-group row">
+                                        <label for="{{ $sessionType }}.IsOpen" class="col-sm-3 col-form-label">
+                                            Está Abierta
+                                        </label>
+                                            <div class="col-sm-9">
+                                                <select class="form-control"
+                                                        id="{{ $sessionType }}.IsOpen"
+                                                        name="{{ $sessionType }}.IsOpen"
+                                                >
+                                                    <option value="0" {{ if eq $session.IsOpen 0 }} selected="selected" {{ end }}>No se puede unir</option>
+                                                    <option value="1" {{ if eq $session.IsOpen 1 }} selected="selected" {{ end }}>Unión libre</option>
+
+                                                    {{ if eq $sessionType "RACE" }}
+                                                        <option value="2" {{ if eq $session.IsOpen 2 }} selected="selected" {{ end }}>
+                                                            Unión libre hasta 20 segundos antes de la luz verde
+                                                        </option>
+                                                    {{ end }}
+                                                </select>
+
+                                                <small>Permite unirse durante una sesión; la primera sesión de un evento no debería
+                                                 configurarse como "no se puede unir", aunque las siguientes sí pueden estarlo para
+                                                     permitir que solo se conecten pilotos de la sesión anterior.</small>
+                                            </div>
+                                    </div>
+
+                                {{ end }}
+
+                                {{ if eq $sessionType "RACE" }}
+
+                                    <div class="form-group row">
+                                        <label for="{{ $sessionType }}.WaitTime" class="col-sm-3 col-form-label">
+                                            Tiempo de Espera
+                                        </label>
+
+                                        <div class="col-sm-9">
+                                            <input
+                                                    type="number"
+                                                    id="{{ $sessionType }}.WaitTime"
+                                                    name="{{ $sessionType }}.WaitTime"
+                                                    class="form-control"
+                                                    value="{{ if and $.IsRaceWeekend (lt $session.WaitTime 120) }}120{{ else }}{{ $session.WaitTime }}{{ end }}"
+
+
+                                                    step="1"
+                                            >
+
+                                            <small>Segundos antes del inicio de la sesión</small>
+                                        </div>
+                                    </div>
+
+                                {{ end }}
+
+
+                                {{ if eq $sessionType "RACE" }}
+                                    <hr>
+
+                                    <div class="row">
+
+                                        <div class="form-group row col-md-6">
+                                            <label for="RacePitWindowStart" class="col-sm-6 col-form-label">Inicio de Ventana de Boxes</label>
+
+                                            <div class="col-sm-6">
+                                                <input
+                                                        type="number"
+                                                        id="RacePitWindowStart"
+                                                        name="RacePitWindowStart"
+                                                        class="form-control"
+                                                        value="{{ $f.RacePitWindowStart }}"
+
+
+                                                        step="1"
+                                                >
+
+                                                <small>La ventana de boxes se abre en la vuelta/minuto especificado</small>
+                                            </div>
+                                        </div>
+
+
+                                        <div class="form-group row col-md-6">
+                                            <label for="RacePitWindowEnd" class="col-sm-6 col-form-label">Fin de Ventana de Boxes</label>
+
+                                            <div class="col-sm-6">
+                                                <input
+                                                        type="number"
+                                                        id="RacePitWindowEnd"
+                                                        name="RacePitWindowEnd"
+                                                        class="form-control"
+                                                        value="{{ $f.RacePitWindowEnd }}"
+
+
+                                                        step="1"
+                                                >
+
+                                                <small>La ventana de boxes se cierra en la vuelta/minuto especificado</small>
+                                            </div>
+                                        </div>
+
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="form-group row col-md-6">
+                                            <label for="RaceOverTime" class="col-sm-6 col-form-label">Tiempo de Cierre de Carrera</label>
+
+                                            <div class="col-sm-6">
+                                                <input
+                                                        type="number"
+                                                        id="RaceOverTime"
+                                                        name="RaceOverTime"
+                                                        class="form-control"
+                                                        value="{{ $f.RaceOverTime }}"
+                                                        min="0"
+
+                                                        step="1"
+                                                >
+
+                                                <small>
+                                                    Tiempo restante en segundos para terminar la carrera desde el momento en que el primero cruza la línea de meta
+                                                </small>
+                                            </div>
+                                        </div>
+
+
+                                        <div class="form-group row col-md-6">
+                                            <label for="RaceGasPenaltyDisabled" class="col-sm-6 col-form-label">
+                                                Penalización de Combustible en Carrera
+                                            </label>
+
+
+                                            <div class="col-sm-6">
+                                                <input
+                                                        type="checkbox"
+                                                        id="RaceGasPenaltyDisabled"
+                                                        name="RaceGasPenaltyDisabled"
+                                                        {{ if not $f.RaceGasPenaltyDisabled }}
+                                                            checked="checked"
+                                                        {{ end }}
+                                                >
+                                                <br>
+
+                                                <small>
+                                                    OFF: no se va a forzar ninguna penalización, pero los cortes se van a guardar en el json de resultados de la carrera.<br>
+                                                    ON: cualquier corte va a ser penalizado con el mensaje de corte de combustible.
+                                                </small>
+                                            </div>
+                                        </div>
+
+                                    </div>
+
+                                    <hr>
+
+                                    {{ if not $.IsRaceWeekend }}
+                                        <div class="form-group row col-md-12">
+                                            <label for="ReversedGridRacePositions" class="col-sm-3 col-form-label" data-toggle="tooltip" title="La sesión de carrera se va a reiniciar en orden de grilla invertido según la clasificación de la carrera anterior. Los jugadores descalificados en la primera carrera van a largar desde el fondo de la grilla en la segunda carrera, sin importar si su posición está dentro del rango de grilla invertida.">
+                                                Posiciones de Carrera con Grilla Invertida
+                                            </label>
+
+                                            <div class="col-sm-9">
+                                                <input
+                                                        type="number"
+                                                        id="ReversedGridRacePositions"
+                                                        name="ReversedGridRacePositions"
+                                                        class="form-control"
+                                                        value="{{ $f.ReversedGridRacePositions }}"
+
+
+                                                        step="1"
+                                                >
+
+                                                <small> 0 = sin carrera adicional<br/>
+                                                    -1 = todas las posiciones se van a invertir (los jugadores retirados van a quedar en las últimas posiciones)<br/>
+                                                    1 = se va a disputar una 2da Carrera con la grilla formada a partir de los resultados de la 1ra Carrera<br/>
+                                                    X = las primeras X posiciones se van a invertir para la 2da carrera
+                                                </small>
+                                            </div>
+                                        </div>
+
+                                        {{ with  $.Championship }}
+                                            {{ if and $.IsChampionship $.Championship.ACSR }}
+                                                <div class="form-group row col-md-12">
+                                                    <label for="ExportSecondRaceToACSR" class="col-sm-3 col-form-label">Exportar 2da Carrera a ACSR</label>
+
+
+                                                    <div class="col-sm-9">
+                                                        <input type="checkbox"
+                                                               id="ExportSecondRaceToACSR"
+                                                               name="ExportSecondRaceToACSR"
+                                                               value="{{ $f.ExportSecondRaceToACSR }}"
+
+                                                                {{ if $f.ExportSecondRaceToACSR }}
+                                                                    checked="checked"
+                                                                {{ end }}
+                                                        >
+
+                                                        <br>
+
+                                                        <small>La segunda carrera también se puede exportar a ACSR, además de la primera carrera.</small>
+                                                    </div>
+                                                </div>
+                                            {{ end }}
+                                        {{ end }}
+                                    {{ end }}
+
+                                    <div class="form-group row col-md-12 race-extra-lap" {{ if and (eq $session.Time 0) (ne $session.Laps 0) }} style="display: none;" {{ end }}>
+                                        <label for="RaceExtraLap" class="col-sm-3 col-form-label">Vuelta Extra</label>
+
+
+                                        <div class="col-sm-9">
+                                            <input
+                                                    type="checkbox"
+                                                    id="RaceExtraLap"
+                                                    name="RaceExtraLap"
+                                                    {{ if $f.RaceExtraLap }}
+                                                        checked="checked"
+                                                    {{ end }}
+                                            >
+                                            <br>
+
+                                            <small>
+                                                Si la carrera es por tiempo, fuerza una vuelta extra después de que el líder haya cruzado la línea
+                                            </small>
+                                        </div>
+                                    </div>
+                                {{ else if eq $sessionType "QUALIFY" }}
+                                    <hr>
+
+                                    <div class="form-group row">
+                                        <label for="QualifyMaxWaitPercentage" class="col-sm-3 col-form-label">Porcentaje Máximo de Espera de
+                                            Clasificación</label>
+
+                                        <div class="col-sm-9">
+                                            <input
+                                                    type="number"
+                                                    id="QualifyMaxWaitPercentage"
+                                                    name="QualifyMaxWaitPercentage"
+                                                    class="form-control"
+                                                    value="{{ $f.QualifyMaxWaitPercentage }}"
+
+
+                                                    step="1"
+                                            >
+
+                                            <small>El factor para calcular el tiempo restante en una sesión de clasificación después de que termine la
+                                                sesión: 120
+                                                significa que queda 120% de la vuelta más rápida de la sesión para terminar la vuelta actual.
+                                            </small>
+                                        </div>
+                                    </div>
+                                {{ end }}
+
+
+                            </div>
+                        </div>
+                    {{ end }}
+                </div>
+            </div>
+        </div>
+
+
+        <div class="card mt-3 border-secondary">
+            <div class="card-header">
+                <strong>Lista de Inscriptos</strong>
+            </div>
+
+            <div class="card-body" id="entrants">
+                {{ if not $.IsRaceWeekend }}
+                    <div class="form-group row {{ if .IsChampionship }}visible-booking-enabled{{ end }}" {{ if and .IsChampionship (not ($f.HasSession "BOOK")) }}style="display: none;"{{ end }}>
+                        <label for="MaxClients" class="col-sm-3 col-form-label">Clientes Máximos</label>
+
+                        <div class="col-sm-9">
+                                <input
+                                        type="number"
+                                        id="MaxClients"
+                                        name="MaxClients"
+                                        class="form-control"
+
+                                        {{ if gt $.MaxClientsOverride 0 }}
+                                            data-value-override="{{ $.MaxClientsOverride }}"
+                                            value="{{ $.MaxClientsOverride }}"
+
+                                            max="{{ $.MaxClientsOverride }}"
+                                        {{ else }}
+                                            value="{{ $f.MaxClients }}"
+                                            {{ with $trackInfo }}max="{{ $trackInfo.Pitboxes }}"{{ end }}
+                                        {{ end }}
+                                        step="1"
+                                >
+
+                            <small>
+                                Cantidad máxima de clientes permitidos en el servidor.
+
+                                {{ if gt $.MaxClientsOverride 0 }}
+                                    <strong>No puede ser mayor a {{ $.MaxClientsOverride }}</strong>. (Este valor está restringido por tu proveedor de hosting.)<br>
+                                {{ end }}
+                            </small>
+                        </div>
+                    </div>
+
+                    {{ if not .IsChampionship }}
+                        <div class="hidden-booking-enabled">
+
+                            <div class="form-group row">
+                                <label for="PickupModeEnabled" class="col-sm-3 col-form-label">Modo Pickup</label>
+
+
+                                <div class="col-sm-9">
+                                    <input type="checkbox"
+                                           id="PickupModeEnabled"
+                                           name="PickupModeEnabled"
+                                           value="{{ $f.PickupModeEnabled }}"
+
+                                            {{ if eq $f.PickupModeEnabled 1 }}
+                                                checked="checked"
+                                            {{ end }}
+                                    >
+
+                                    <br>
+
+                                    <small>
+                                        Si está en OFF el servidor inicia en modo booking. Advertencia: en modo pickup tenés que
+                                        incluir al menos un auto en la lista de inscriptos. Tené en cuenta que, cuando el Modo Pickup
+                                        está en OFF, las sesiones con Modo Bucle activado o con Posiciones de Grilla Invertida van a
+                                        requerir que los jugadores vuelvan a unirse al servidor cuando el servidor repita en bucle o
+                                        avance a una segunda carrera.
+                                    </small>
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <label for="LockedEntryList" class="col-sm-3 col-form-label">Lista de Inscriptos Bloqueada</label>
+
+
+                                <div class="col-sm-9">
+                                    <input type="checkbox"
+                                           id="LockedEntryList"
+                                           name="LockedEntryList"
+                                           value="{{ $f.LockedEntryList }}"
+
+                                            {{ if eq $f.LockedEntryList 1 }}
+                                                checked="checked"
+                                            {{ end }}
+                                    >
+
+                                    <br>
+
+                                    <small>Solo los jugadores ya incluidos en la lista de inscriptos pueden unirse al servidor.</small>
+
+                                    <small id="locked-reverse-warning" class="text-danger">El servidor se va a caer si
+                                    hay una segunda carrera activa (Posiciones de Carrera con Grilla Invertida != 0), la lista de inscriptos
+                                    está bloqueada y el modo pickup está apagado. ¡Para activar la lista de inscriptos bloqueada en este evento
+                                    activá también el modo pickup!</small>
+                                </div>
+                            </div>
+
+                            <div id="entrantTemplate" class="entrant">
+                                {{ template "entrant" }}
+                            </div>
+
+                        </div>
+                    {{ end }}
+
+                    {{ if and $.IsPremium (not $.IsChampionship) }}
+                        <hr>
+                    {{ end }}
+                {{ end }}
+
+                {{ if $.IsPremium }}
+                    <div class="form-group row">
+                        <label for="DriverSwapEnabled" class="col-sm-3 col-form-label">Cambios de Piloto</label>
+
+
+                        <div class="col-sm-9">
+                            <input type="checkbox"
+                                   id="DriverSwapEnabled"
+                                   name="DriverSwapEnabled"
+                                   value="{{ $f.DriverSwapEnabled }}"
+
+                                    {{ if eq $f.DriverSwapEnabled 1 }}
+                                        checked="checked"
+                                    {{ end }}
+                            >
+
+                            <br>
+                            <small>
+                                Los Cambios de Piloto de Server Manager van a permitir que un mismo participante tenga varios pilotos que puedan hacer cambios de piloto. Agregá varios GUIDs separados por ; a un participante para habilitar esto.
+                                <strong>
+                                    Nota: los Cambios de Piloto solo van a generar archivos de resultados válidos si la línea de cronometraje de un circuito está antes o después de todos los boxes.
+                                </strong>
+
+                                Seguí esta <a href="https://github.com/JustaPenguin/assetto-server-manager/wiki/Driver-swap-track-editing">guía sobre cómo editar circuitos para que funcionen con los Cambios de Piloto</a>.
+                            </small>
+                        </div>
+                    </div>
+
+
+                    <div class="visible-driver-swap-enabled">
+                        <div class="form-group row">
+                            <label for="DriverSwapMinTime" class="col-sm-3 col-form-label">Tiempo Mínimo de Cambio de Piloto (segundos)</label>
+
+                            <div class="col-sm-9">
+                                <input
+                                        type="number"
+                                        id="DriverSwapMinTime"
+                                        name="DriverSwapMinTime"
+                                        class="form-control"
+                                        value="{{ $f.DriverSwapMinTime }}"
+                                        step="1"
+                                >
+
+                                <small>
+                                    Tiempo mínimo para un cambio de piloto, usado para evitar dar ventaja a usuarios con computadoras más rápidas. Si el segundo piloto arranca antes de este tiempo va a ser descalificado o va a recibir una penalización según la configuración.
+                                </small>
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label for="DriverSwapDisqualifyTime" class="col-sm-3 col-form-label">Ventana de Descalificación por Cambio de Piloto (segundos)</label>
+
+                            <div class="col-sm-9">
+                                <input
+                                        type="number"
+                                        id="DriverSwapDisqualifyTime"
+                                        name="DriverSwapDisqualifyTime"
+                                        class="form-control"
+                                        value="{{ $f.DriverSwapDisqualifyTime }}"
+                                        step="1"
+                                >
+
+                                <small>
+                                    El piloto va a ser expulsado de la carrera y descalificado si arranca esta cantidad de segundos o más antes del tiempo mínimo durante un Cambio de Piloto.
+                                </small>
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label for="DriverSwapPenaltyTime" class="col-sm-3 col-form-label">Ventana de Penalización por Cambio de Piloto (segundos)</label>
+
+                            <div class="col-sm-9">
+                                <input
+                                        type="number"
+                                        id="DriverSwapPenaltyTime"
+                                        name="DriverSwapPenaltyTime"
+                                        class="form-control"
+                                        value="{{ $f.DriverSwapPenaltyTime }}"
+                                        step="1"
+                                >
+
+                                <small>
+                                    Si un piloto arranca esta cantidad de segundos o más antes del tiempo mínimo durante un Cambio de Piloto,
+                                    va a recibir una penalización igual a los segundos restantes de la cuenta regresiva más 5 segundos.
+                                </small>
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label for="DriverSwapMinimumNumberOfSwaps" class="col-sm-3 col-form-label">Cantidad Mínima de Cambios de Piloto</label>
+
+                            <div class="col-sm-9">
+                                <input
+                                        type="number"
+                                        id="DriverSwapMinimumNumberOfSwaps"
+                                        name="DriverSwapMinimumNumberOfSwaps"
+                                        class="form-control"
+                                        value="{{ $f.DriverSwapMinimumNumberOfSwaps }}"
+                                        step="1"
+                                >
+
+                                <small>
+                                    La cantidad de cambios que un piloto debe completar. Si no completa la cantidad requerida de paradas, es penalizado (ver abajo).
+                                </small>
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label for="DriverSwapNotEnoughSwapsPenalty" class="col-sm-3 col-form-label">Penalización por Cambios de Piloto Insuficientes (segundos)</label>
+
+                            <div class="col-sm-9">
+                                <input
+                                        type="number"
+                                        id="DriverSwapNotEnoughSwapsPenalty"
+                                        name="DriverSwapNotEnoughSwapsPenalty"
+                                        class="form-control"
+                                        value="{{ $f.DriverSwapNotEnoughSwapsPenalty }}"
+                                        step="1"
+                                >
+
+                                <small>
+                                    La penalización en segundos que se aplica a un piloto por cada Cambio de Piloto por debajo del mínimo requerido que no completó. Si se configura en 0, el piloto es descalificado.
+                                </small>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <br>
+                {{ end }}
+
+                {{ if not $.IsRaceWeekend }}
+                    <div class="hidden-booking-enabled">
+
+                        <div class="entrants-block">
+                            {{ range $index, $entrant := .CurrentEntrants.AsSlice }}
+                                <div class="entrant">
+                                    {{ template "entrant" dict "Entrant" $entrant "IsChampionshipEvent" $.IsChampionship }}
+                                </div>
+                            {{ else }}
+                                <div class="entrant">
+                                    {{ template "entrant" }}
+                                </div>
+                            {{ end }}
+                        </div>
+
+
+                        {{ if not .IsChampionship }}
+                            <div class="row">
+                                <div class="col-md-8 pt-2">
+                                    <p>El Auto, Skin, Lastre, Restrictor y Setup Fijo del último Participante se van a clonar en los nuevos Participantes.</p>
+                                </div>
+                                <div class="col-md-4 text-right">
+                                    <input class="form-control numEntrantsToAdd" type="number" name="NumEntrantsToAdd" value="1" min="0">
+
+                                    <button class="btn btn-warning addEntrant">Agregar Participante(s)</button>
+                                </div>
+                            </div>
+                        {{ end }}
+
+                    </div>
+
+                    <div class="visible-booking-enabled">
+                        <p>El Modo Booking está habilitado. No podés configurar pilotos específicos en la Lista de Inscriptos. El Modo Pickup va a estar deshabilitado.</p>
+                    </div>
+
+                    <input type="hidden" class="totalNumEntrants" name="EntryList.NumEntrants" value="{{ if gt 0 (len .CurrentEntrants) }}{{ len .CurrentEntrants }}{{ else }}1{{ end }}">
+                {{ end }}
+
+                <div class="clearfix"></div>
+            </div>
+        </div>
+
+        <div class="card mt-3 border-secondary">
+            <div class="card-header">
+                <strong>Ayudas</strong>
+            </div>
+
+            <div class="card-body">
+
+                <div class="form-group row">
+                    <label for="ABSAllowed" class="col-sm-3 col-form-label">ABS Permitido</label>
+
+                    <div class="col-sm-9">
+                        <select class="form-control" id="ABSAllowed" name="ABSAllowed">
+                            <option value="0" {{ if eq $f.ABSAllowed 0 }} selected="selected" {{ end }}>Apagado</option>
+                            <option value="1" {{ if eq $f.ABSAllowed 1 }} selected="selected" {{ end }}>De Fábrica</option>
+                            <option value="2" {{ if eq $f.ABSAllowed 2 }} selected="selected" {{ end }}>Encendido</option>
+                        </select>
+                    </div>
+                </div>
+
+
+                <div class="form-group row">
+                    <label for="TractionControlAllowed" class="col-sm-3 col-form-label">
+                        Control de Tracción Permitido
+                    </label>
+
+                    <div class="col-sm-9">
+                        <select class="form-control" id="TractionControlAllowed" name="TractionControlAllowed">
+                            <option value="0" {{ if eq $f.TractionControlAllowed 0 }} selected="selected" {{ end }}>Apagado</option>
+                            <option value="1" {{ if eq $f.TractionControlAllowed 1 }} selected="selected" {{ end }}>De Fábrica</option>
+                            <option value="2" {{ if eq $f.TractionControlAllowed 2 }} selected="selected" {{ end }}>Encendido</option>
+                        </select>
+                    </div>
+                </div>
+
+
+                <div class="form-group row">
+                    <label for="StabilityControlAllowed" class="col-sm-3 col-form-label">
+                        Control de Estabilidad Permitido
+                    </label>
+
+                    <div class="col-sm-9">
+                        <input type="checkbox"
+                               id="StabilityControlAllowed"
+                               name="StabilityControlAllowed"
+                            {{ if $f.StabilityControlAllowed }}
+                                checked="checked"
+                            {{ end }}
+                        >
+                        <br>
+                    </div>
+                </div>
+
+
+                <div class="form-group row">
+                    <label for="AutoClutchAllowed" class="col-sm-3 col-form-label">Embrague Automático Permitido</label>
+
+
+                    <div class="col-sm-9">
+                        <input type="checkbox"
+                               id="AutoClutchAllowed"
+                               name="AutoClutchAllowed"
+                               {{ if $f.AutoClutchAllowed }}
+                                   checked="checked"
+                               {{ end }}
+                        >
+                        <br>
+                    </div>
+                </div>
+
+
+                <div class="form-group row">
+                    <label for="TyreBlanketsAllowed" class="col-sm-3 col-form-label">Mantas Térmicas Permitidas</label>
+
+
+                    <div class="col-sm-9">
+                        <input type="checkbox"
+                               id="TyreBlanketsAllowed"
+                               name="TyreBlanketsAllowed"
+
+                               {{ if $f.TyreBlanketsAllowed }}
+                                   checked="checked"
+                               {{ end }}
+                        >
+                        <br>
+
+                        <small>
+                            Al inicio de la sesión o después de una parada en boxes, los neumáticos van a tener la temperatura óptima.
+                        </small>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+
+        <div class="card mt-3 border-secondary">
+            <div class="card-header">
+                <strong>Clima</strong>
+            </div>
+
+            <div class="card-body">
+
+                <div class="form-group row">
+                    <label class="col-sm-3 col-form-label">Integración con Sol</label>
+
+                    <div class="col-sm-9">
+                        {{ if .SolIsInstalled }}
+                            <input
+                                    type="checkbox"
+                                    class="sol-enabler"
+                                    name="Sol.Enabled"
+                                    id="Sol.Enabled"
+
+                                    {{ if $f.IsSol }}
+                                        checked="checked"
+                                    {{ end }}
+                            >
+
+                            <br>
+                            <small>Permite ciclos de 24 horas. El servidor trata el tiempo de forma diferente si está habilitado. Los clientes también necesitan Sol y Content Manager</small>
+                        {{ else }}
+                            <p class="text-danger">Sol no está instalado. Por favor <a href="/weather">subí tus climas de Sol</a> si querés usar Sol.</p>
+                        {{ end }}
+                    </div>
+                </div>
+
+                <div class="not-sol-settings" {{ if $f.IsSol }} style="display: none;" {{ end }}>
+
+
+                    <div class="form-group row">
+                        <label for="SunAngle" class="col-sm-3 col-form-label">Hora del Día</label>
+
+                        <div class="col-sm-9">
+                            <input
+                                    type="time"
+                                    id="TimeOfDay"
+                                    name="TimeOfDay"
+                                    class="form-control"
+                                    value="16:00"
+                            >
+
+                            <small>Se usa para calcular el Ángulo del Sol (abajo)</small>
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <label for="SunAngle" class="col-sm-3 col-form-label">Ángulo del Sol</label>
+
+                        <div class="col-sm-9">
+                            <input
+                                    type="number"
+                                    id="SunAngle"
+                                    name="SunAngle"
+                                    class="form-control"
+                                    value="{{ $f.SunAngle }}"
+
+
+                                    step="1"
+                            >
+
+                            <small>Ángulo de la posición del sol</small>
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <label for="TimeOfDayMultiplier" class="col-sm-3 col-form-label">Multiplicador de Hora del Día</label>
+
+                        <div class="col-sm-9">
+                            <input
+                                    type="number"
+                                    id="TimeOfDayMultiplier"
+                                    name="TimeOfDayMultiplier"
+                                    class="form-control"
+                                    value="{{ $f.TimeOfDayMultiplier }}"
+                                    min="0"
+                                    step="1"
+                            >
+
+                            <small>Multiplicador de la hora del día</small>
+                        </div>
+                    </div>
+                </div>
+
+                <hr>
+
+                <p>Cada sesión nueva va a <strong>elegir aleatoriamente</strong> su configuración de clima entre las siguientes opciones.</p>
+
+                <div class="row">
+
+                    {{ $weatherIndex := 0 }}
+                    {{ $weatherOptions := .Weather }}
+
+                    {{ range $index, $weather := $f.Weather }}
+
+                        <div class="col-sm-12 weather">
+                            <div class="card mb-5 border-primary">
+                                <div class="card-header">
+                                    <strong class="weather-num">{{ $weatherIndex }}</strong>
+
+                                    <a href="#"
+                                       class="float-right text-danger weather-delete"
+                                       title="Eliminar este Clima"
+                                       {{ if eq $weatherIndex 0 }}
+                                           style="display: none;"
+                                       {{ end }}
+                                    >
+                                        <i class="fa fa-trash"></i>
+                                    </a>
+                                </div>
+
+                                <div class="card-body row">
+
+                                    <div class="col-sm-7">
+
+                                        <div class="sol-settings" {{ if not $f.IsSol }} style="display: none;" {{ end }}>
+
+                                            <div class="form-group row">
+                                                <label class="col-sm-3 col-form-label">Fecha/Hora de Inicio de Sesión</label>
+
+                                                <div class="col-sm-9 p-0" id="date-time-picker">
+                                                    <input
+                                                            type="datetime-local"
+                                                            id="DateUnix"
+                                                            name="DateUnix"
+                                                            class="form-control"
+                                                            {{ if gt $weather.CMWFXDateUnModified 0 }}
+                                                                value="{{ dateInZone "2006-01-02T15:04" ($weather.UnixToTime $weather.CMWFXDateUnModified) "UTC" }}"
+                                                            {{ else }}
+                                                                value="{{ dateInZone "2006-01-02T15:04" now "UTC" }}"
+                                                            {{ end }}
+                                                    >
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group row">
+                                                <label class="col-sm-3 col-form-label">Multiplicador de Progresión de Tiempo</label>
+
+                                                <div class="col-sm-9 p-0">
+                                                    <input
+                                                            type="number"
+                                                            id="TimeMulti"
+                                                            name="TimeMulti"
+                                                            class="form-control"
+                                                            value="{{ $weather.CMWFXTimeMulti }}"
+                                                            step="1"
+                                                    >
+
+                                                    <small>Ej. a 60x, 24 horas en el juego van a pasar en 24 minutos de tiempo real</small>
+                                                </div>
+                                            </div>
+
+                                        </div>
+
+                                        <div class="form-group row">
+                                            <label class="col-sm-3 col-form-label" for="Graphics">Gráficos</label>
+
+                                            <select name="Graphics" id="Graphics" class="form-control weather-graphics col-sm-9">
+                                                {{ range $weatherKey, $weatherName := $weatherOptions }}
+                                                    <option value="{{ $weatherKey }}" {{ if eq $weatherKey ($weather.TrimName $weather.Graphics) }} selected="selected" {{ end }}>
+                                                        {{ $weatherName }}
+                                                    </option>
+                                                {{ end }}
+                                            </select>
+                                        </div>
+
+                                        <div class="form-group row {{ if not $.IsChampionship }}d-none{{ end }}">
+                                            <label class="col-sm-3 col-form-label" for="ChampionshipPracticeWeather">Contexto de Clima de Campeonato</label>
+
+                                            <div class="col-sm-9 p-0">
+                                                <select name="ChampionshipPracticeWeather" id="ChampionshipPracticeWeather"
+                                                        class="form-control"
+                                                        {{ if not $.IsChampionship }}readonly="readonly"{{ end }}>
+
+                                                    <option value="weatherAny" {{ if and $.IsChampionship (eq $weather.ChampionshipPracticeWeather "weatherAny") }} selected="selected" {{ end }}>
+                                                        Cualquier Sesión
+                                                    </option>
+                                                    <option value="weatherPractice" {{ if and $.IsChampionship (eq $weather.ChampionshipPracticeWeather "weatherPractice") }} selected="selected" {{ end }}>
+                                                        Solo Prácticas de Campeonato
+                                                    </option>
+                                                    <option value="weatherEvent" {{ if and $.IsChampionship (eq $weather.ChampionshipPracticeWeather "weatherEvent") }} selected="selected" {{ end }}>
+                                                        Solo Evento de Campeonato
+                                                    </option>
+                                                </select>
+
+                                                <small>Elegí si el clima se va a usar solo para sesiones de práctica de campeonato (iniciadas desde la página de resumen del campeonato),
+                                                solo para eventos de campeonato reales, o para cualquier sesión</small>
+                                            </div>
+                                        </div>
+
+                                    </div>
+
+                                    <div class="col-sm-5">
+                                        <div class="thumb mb-3">
+                                            <img class="weather-preview" src="/content/weather/{{ $weather.TrimName $weather.Graphics }}/preview.jpg" alt="{{ $weather.TrimName $weather.Graphics }}" onerror="this.style.display='none'">
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group col-sm-6">
+                                        <label>Temperatura Ambiente Base</label>
+                                        <input
+                                                type="number"
+                                                id="BaseTemperatureAmbient"
+                                                name="BaseTemperatureAmbient"
+                                                class="form-control"
+                                                value="{{ $weather.BaseTemperatureAmbient }}"
+
+
+                                                step="1"
+                                        >
+                                    </div>
+
+
+                                    <div class="form-group col-sm-6">
+                                        <label>Temperatura de Pista Base</label>
+                                        <input
+                                                type="number"
+                                                id="BaseTemperatureRoad"
+                                                name="BaseTemperatureRoad"
+                                                class="form-control"
+                                                value="{{ $weather.BaseTemperatureRoad }}"
+
+
+                                                step="1"
+                                        >
+
+                                        <small>
+                                            Este valor se va a sumar a la temperatura ambiente
+                                            final. Puede ser negativo.
+                                        </small>
+                                    </div>
+
+
+                                    <div class="form-group col-sm-6">
+                                        <label>Variación Ambiente</label>
+
+                                        <input
+                                                type="number"
+                                                id="VariationAmbient"
+                                                name="VariationAmbient"
+                                                class="form-control"
+                                                value="{{ $weather.VariationAmbient }}"
+
+
+                                                step="1"
+                                        >
+
+                                        <small>
+                                            Variación de la temperatura ambiente. En este ejemplo la temperatura ambiente
+                                            final puede ser 16 o 20
+                                        </small>
+                                    </div>
+
+
+                                    <div class="form-group col-sm-6">
+                                        <label>Variación de Pista</label>
+
+                                        <input
+                                                type="number"
+                                                id="VariationRoad"
+                                                name="VariationRoad"
+                                                class="form-control"
+                                                value="{{ $weather.VariationRoad }}"
+
+
+                                                step="1"
+                                        >
+
+                                        <small>Variación de la temperatura de pista. Igual que la ambiente</small>
+                                    </div>
+
+
+                                    <div class="form-group col-sm-6">
+                                        <label>Velocidad Base de Viento Mínima</label>
+
+                                        <input
+                                                type="number"
+                                                id="WindBaseSpeedMin"
+                                                name="WindBaseSpeedMin"
+                                                class="form-control"
+                                                value="{{ $weather.WindBaseSpeedMin }}"
+                                                min="0"
+                                                step="1"
+                                        >
+
+                                        <small>Velocidad mínima posible de la sesión</small>
+                                    </div>
+
+
+                                    <div class="form-group col-sm-6">
+                                        <label>Velocidad Base de Viento Máxima</label>
+
+                                        <input
+                                                type="number"
+                                                id="WindBaseSpeedMax"
+                                                name="WindBaseSpeedMax"
+                                                class="form-control"
+                                                value="{{ $weather.WindBaseSpeedMax }}"
+                                                max="40"
+
+                                                step="1"
+                                        >
+
+                                        <small>Velocidad máxima posible de la sesión (máx 40)</small>
+                                    </div>
+
+
+                                    <div class="form-group col-sm-6">
+                                        <label>Dirección Base del Viento</label>
+
+                                        <input
+                                                type="number"
+                                                id="WindBaseDirection"
+                                                name="WindBaseDirection"
+                                                class="form-control"
+                                                value="{{ $weather.WindBaseDirection }}"
+
+
+                                                step="1"
+                                        >
+
+                                        <small>Dirección base del viento (hacia dónde apunta el viento); 0 = Norte, 90 = Este, etc.</small>
+                                    </div>
+
+
+                                    <div class="form-group col-sm-6">
+                                        <label>Variación de Dirección del Viento</label>
+
+                                        <input
+                                                type="number"
+                                                id="WindVariationDirection"
+                                                name="WindVariationDirection"
+                                                class="form-control"
+                                                value="{{ $weather.WindVariationDirection }}"
+
+
+                                                step="1"
+                                        >
+
+                                        <small>Variación (+ o -) de la dirección base</small>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+                        {{ $weatherIndex = add $weatherIndex 1 }}
+                    {{ end }}
+                </div>
+
+                <button class="btn btn-primary float-right" id="addWeather">Agregar Clima</button>
+
+                <div class="clearfix mb-5"></div>
+
+            </div>
+
+        </div>
+
+
+        <div class="card mt-3 border-secondary">
+            <div class="card-header">
+                <strong>Realismo</strong>
+            </div>
+
+            <div class="card-body">
+
+
+                <div class="form-group row legal-tyres">
+                    <label for="LegalTyres" class="col-sm-3 col-form-label">Neumáticos Permitidos</label>
+
+                    {{ $allTyres := .Tyres }}
+
+                    <div class="col-sm-9">
+                        <select multiple class="form-control" id="LegalTyres" name="LegalTyres">
+                            {{ range $index, $tyre := varSplit $f.LegalTyres }}
+                                <option value="{{ $tyre }}" selected="selected">{{ prettify ($allTyres.Name $tyre (varSplit $f.Cars)) false }} ({{ $tyre }})</option>
+                            {{ end }}
+
+                            {{ range $tyre, $found := .DeselectedTyres }}
+                                <option value="{{ $tyre }}">{{ prettify ($allTyres.Name $tyre (varSplit $f.Cars)) false }} ({{ $tyre }})</option>
+                            {{ end }}
+                        </select>
+                    </div>
+                </div>
+
+
+                <div class="form-group row">
+                    <label for="FuelRate" class="col-sm-3 col-form-label">Tasa de Combustible</label>
+
+                    <div class="col-sm-9">
+                        <input
+                                type="number"
+                                id="FuelRate"
+                                name="FuelRate"
+                                class="form-control"
+                                value="{{ $f.FuelRate }}"
+                                min="0"
+
+                                step="1"
+                        >
+
+                        <small>Consumo de combustible de 0 (sin consumo) a XXX (100 es el realista)</small>
+                    </div>
+                </div>
+
+
+                <div class="form-group row">
+                    <label for="DamageMultiplier" class="col-sm-3 col-form-label">Multiplicador de Daño</label>
+
+                    <div class="col-sm-9">
+                        <input
+                                type="number"
+                                id="DamageMultiplier"
+                                name="DamageMultiplier"
+                                class="form-control"
+                                value="{{ $f.DamageMultiplier }}"
+                                min="0"
+                                step="1"
+                        >
+
+                        <small>Daño de 0 (sin daño) a 100 (daño completo)</small>
+                    </div>
+                </div>
+
+
+                <div class="form-group row">
+                    <label for="TyreWearRate" class="col-sm-3 col-form-label">Tasa de Desgaste de Neumáticos</label>
+
+                    <div class="col-sm-9">
+                        <input
+                                type="number"
+                                id="TyreWearRate"
+                                name="TyreWearRate"
+                                class="form-control"
+                                value="{{ $f.TyreWearRate }}"
+                                min="0"
+
+                                step="1"
+                        >
+
+                        <small>Desgaste de neumáticos de 0 (sin desgaste) a XXX (100 es el realista)</small>
+                    </div>
+                </div>
+
+
+                <div class="form-group row">
+                    <label for="ForceVirtualMirror" class="col-sm-3 col-form-label">Espejo Virtual Forzado</label>
+
+
+                    <div class="col-sm-9">
+                        <input type="checkbox"
+                               id="ForceVirtualMirror"
+                               name="ForceVirtualMirror"
+                               {{ if $f.ForceVirtualMirror }}
+                                   checked="checked"
+                               {{ end }}
+                        >
+                        <br>
+
+                        <small>Fuerza a los clientes a usar Espejos Virtuales (no funciona en VR)</small>
+                    </div>
+                </div>
+
+
+
+                <h4>Circuito Dinámico</h4>
+
+                <div class="form-group row">
+                    <label for="SurfacePreset" class="col-sm-3 col-form-label">Preset de Superficie</label>
+
+                    <div class="col-sm-9">
+                        <select name="SurfacePreset" class="form-control" id="SurfacePreset">
+                            <option></option>
+                            {{ range $index, $preset := .SurfacePresets }}
+                                <option value="{{ $index }}">{{ $preset.Name }}: {{ $preset.Description }}</option>
+                            {{ end }}
+                        </select>
+
+                        <small>Presets de Circuito Dinámico</small>
+                    </div>
+                </div>
+
+
+                <div class="form-group row">
+                    <label for="SessionStart" class="col-sm-3 col-form-label">Inicio de Sesión</label>
+
+                    <div class="col-sm-9">
+                        <input
+                                type="number"
+                                id="SessionStart"
+                                name="SessionStart"
+                                class="form-control"
+                                value="{{ $f.DynamicTrack.SessionStart }}"
+
+
+                                step="1"
+                        >
+
+                        <small>% de agarre al inicio de la sesión</small>
+                    </div>
+                </div>
+
+
+                <div class="form-group row">
+                    <label for="Randomness" class="col-sm-3 col-form-label">Aleatoriedad</label>
+
+                    <div class="col-sm-9">
+                        <input
+                                type="number"
+                                id="Randomness"
+                                name="Randomness"
+                                class="form-control"
+                                value="{{ $f.DynamicTrack.Randomness }}"
+
+
+                                step="1"
+                        >
+
+                        <small>Nivel de aleatoriedad agregado al agarre inicial</small>
+                    </div>
+                </div>
+
+
+                <div class="form-group row">
+                    <label for="SessionTransfer" class="col-sm-3 col-form-label">Transferencia de Sesión</label>
+
+                    <div class="col-sm-9">
+                        <input
+                                type="number"
+                                id="SessionTransfer"
+                                name="SessionTransfer"
+                                class="form-control"
+                                value="{{ $f.DynamicTrack.SessionTransfer }}"
+
+
+                                step="1"
+                        >
+
+                        <small>Cuánto del agarre ganado se va a sumar a la próxima sesión; 100 -&gt; todo el agarre
+                            ganado. Ejemplo: diferencia entre el agarre inicial (90) y final (96) en la sesión = 6%,
+                            con session_transfer = 50 la próxima sesión va a arrancar con 93.
+                        </small>
+                    </div>
+                </div>
+
+
+                <div class="form-group row">
+                    <label for="LapGain" class="col-sm-3 col-form-label">Ganancia por Vuelta</label>
+
+                    <div class="col-sm-9">
+                        <input
+                                type="number"
+                                id="LapGain"
+                                name="LapGain"
+                                class="form-control"
+                                value="{{ $f.DynamicTrack.LapGain }}"
+
+
+                                step="1"
+                        >
+
+                        <small>Cuántas vueltas se necesitan para sumar 1% de agarre</small>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+
+        <div class="card mt-3 border-secondary">
+            <div class="card-header">
+                <strong>Reglas</strong>
+            </div>
+
+            <div class="card-body">
+
+
+                <div class="form-group row">
+                    <label for="MaxBallastKilograms" class="col-sm-3 col-form-label">Lastre Máximo en Kilogramos</label>
+
+                    <div class="col-sm-9">
+                        <input
+                                type="number"
+                                id="MaxBallastKilograms"
+                                name="MaxBallastKilograms"
+                                class="form-control"
+                                value="{{ $f.MaxBallastKilograms }}"
+                                min="0"
+
+                                step="1"
+                        >
+
+                        <small>El lastre total máximo que se le puede agregar a un participante en la lista de inscriptos o a través del comando de administrador</small>
+                    </div>
+                </div>
+
+
+                <div class="form-group row">
+                    <label for="AllowedTyresOut" class="col-sm-3 col-form-label">Neumáticos Fuera Permitidos</label>
+
+                    <div class="col-sm-9">
+                        <input
+                                type="number"
+                                id="AllowedTyresOut"
+                                name="AllowedTyresOut"
+                                class="form-control"
+                                value="{{ $f.AllowedTyresOut }}"
+
+
+                                step="1"
+                        >
+
+                        <small>La cantidad de neumáticos permitidos fuera de los límites del circuito antes de aplicar una penalización. -1 desactiva esta opción.</small>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <label for="MaxContactsPerKilometer" class="col-sm-3 col-form-label">Máximo de Contactos por Kilómetro</label>
+
+                    <div class="col-sm-9">
+                        <input
+                                type="number"
+                                id="MaxContactsPerKilometer"
+                                name="MaxContactsPerKilometer"
+                                class="form-control"
+
+                                value="{{ $f.MaxContactsPerKilometer }}"
+
+
+                                step="1"
+                        >
+
+                        <small>Cantidad máxima de veces que podés hacer contacto con otro auto en 1 kilómetro. -1 = sin límite. (Tuvimos resultados dispares usando esto en nuestras pruebas. Usalo con precaución.)</small>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <label for="StartRule" class="col-sm-3 col-form-label">Regla de Largada</label>
+
+                    <div class="col-sm-9">
+
+                        <select class="form-control" id="StartRule" name="StartRule">
+                            <option value="0" {{ if eq $f.StartRule 0 }} selected="selected" {{ end }}>El Auto Está Bloqueado Hasta la Largada</option>
+                            <option value="1" {{ if eq $f.StartRule 1 }} selected="selected" {{ end }}>Teletransporte</option>
+                            <option value="2" {{ if eq $f.StartRule 2 }} selected="selected" {{ end }}>Drive Through</option>
+                        </select>
+
+                        <small>Si la carrera tiene 3 vueltas o menos, se habilita la penalización de Teletransporte.</small>
+                    </div>
+                </div>
+
+
+                {{ if and (not $.IsChampionship) (not $.IsRaceWeekend) }}
+                    <div class="form-group row">
+                        <label for="LoopMode" class="col-sm-3 col-form-label">Modo Bucle</label>
+
+
+                        <div class="col-sm-9">
+                            <input
+                                    type="checkbox"
+                                    id="LoopMode"
+                                    name="LoopMode"
+                                    {{ if $f.LoopMode }}
+                                        checked="checked"
+                                    {{ end }}
+                            >
+                            <br>
+
+                            <small>El servidor se reinicia desde el primer evento después de que termina el evento anterior</small>
+                        </div>
+                    </div>
+                {{ end }}
+
+                <div class="form-group row">
+                    <label for="ResultScreenTime" class="col-sm-3 col-form-label">Tiempo de Pantalla de Resultados</label>
+
+                    <div class="col-sm-9">
+                        <input
+                                type="number"
+                                id="ResultScreenTime"
+                                name="ResultScreenTime"
+                                class="form-control"
+                                {{ with $f.ResultScreenTime }}
+                                    value="{{ . }}"
+                                {{ end }}
+                                min="0"
+                        >
+
+                        <small>Segundos de pantalla de resultados entre sesiones de carrera</small>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <label for="DisableDRSZones" class="col-sm-3 col-form-label">Deshabilitar Zonas DRS</label>
+
+                    <div class="col-sm-9">
+
+                        <input
+                                class="form-control"
+                                type="checkbox"
+                                id="DisableDRSZones"
+                                name="DisableDRSZones"
+                                {{ if $f.DisableDRSZones }}
+                                    checked="checked"
+                                {{ end }}
+                        ><br/>
+
+                        <small>
+                            Cuando está ON, el drs_zones.ini del circuito se va a reemplazar temporalmente con un archivo que desactiva el DRS en todo el circuito.
+                            Esto es útil para circuitos que no tienen zonas claramente definidas, ¡o si querés correr sin DRS!
+
+                            <strong>
+                                Nota: esto cambia archivos reales del circuito, así que si estás usando una configuración multiservidor que apunta a la misma carpeta de contenido,
+                                esto puede causar problemas si estás corriendo carreras en el mismo circuito de forma simultánea.
+                            </strong>
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{ if $.ShowOverridePasswordCard }}
+            <div class="card mt-3 border-secondary">
+                <div class="card-header">
+                    <strong>Opciones del Servidor</strong>
+                </div>
+                <div class="card-body">
+                    <div class="form-group row">
+                        <label for="OverridePassword" class="col-sm-3 col-form-label">Sobrescribir Contraseña del Servidor</label>
+
+                        <div class="col-sm-9">
+
+                            <input
+                                    class="form-control"
+                                    type="checkbox"
+                                    id="OverridePassword"
+                                    name="OverridePassword"
+                                    {{ if .OverridePassword }}
+                                        checked="checked"
+                                    {{ end }}
+                            ><br/>
+
+                            <small>Si está habilitado, la contraseña del servidor se va a reemplazar para este evento.</small>
+                        </div>
+                    </div>
+
+                    <div class="form-group row" id="ReplacementPasswordWrapper" {{ if not .OverridePassword }} style="display: none;" {{ end }}>
+                        <label for="ReplacementPassword" class="col-sm-3 col-form-label">Contraseña de Reemplazo</label>
+
+                        <div class="col-sm-9">
+
+                            <input
+                                    class="form-control"
+                                    type="password"
+                                    autocomplete="new-password"
+                                    id="ReplacementPassword"
+                                    name="ReplacementPassword"
+                                    value="{{ .ReplacementPassword }}"
+                            >
+
+                            <small>Si se deja vacío, el servidor no va a tener contraseña.</small>
+                        </div>
+                    </div>
+
+                    {{ if and (not .IsChampionship) (not .IsRaceWeekend) }}
+                        <div class="form-group row">
+                            <label for="ForceStopTime" class="col-sm-3 col-form-label">Tiempo de Detención Forzada</label>
+
+                            <div class="col-sm-9">
+                                <input
+                                        type="number"
+                                        id="ForceStopTime"
+                                        name="ForceStopTime"
+                                        class="form-control"
+                                        {{ with .ForceStopTime }}
+                                            value="{{ . }}"
+                                        {{ end }}
+                                        min="0"
+                                >
+
+                                <small>Cantidad máxima de minutos que este evento va a correr (en todas las sesiones) antes de que el servidor lo detenga a la fuerza. Esto permite la rotación de circuitos en bucle automático incluso si no hay pilotos en el servidor. Desactivado si es 0. ADVERTENCIA: ¡los archivos de resultados no se van a generar si un evento se detiene a la fuerza!</small>
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label for="ForceStopWithDrivers" class="col-sm-3 col-form-label">Detención Forzada con Pilotos</label>
+
+                            <div class="col-sm-9">
+
+                                <input
+                                        class="form-control"
+                                        type="checkbox"
+                                        id="ForceStopWithDrivers"
+                                        name="ForceStopWithDrivers"
+                                        {{ if .ForceStopWithDrivers }}
+                                            checked="checked"
+                                        {{ end }}
+                                ><br/>
+
+                                <small>Si está habilitado, el servidor se va a detener a la fuerza después del Tiempo de Detención Forzada incluso si hay pilotos en el servidor.</small>
+                            </div>
+                        </div>
+                    {{ end }}
+
+                </div>
+            </div>
+        {{ end }}
+
+        {{ if .IsChampionship }}
+            <div class="card mt-3 border-primary">
+                <div class="card-header text-white bg-primary">
+                    <strong>Guardar Evento de Campeonato</strong>
+                </div>
+                <div class="card-body">
+
+                    {{ if .IsEditing }}
+                        <p>
+                            Esta configuración editada va a sobrescribir el {{ add .ChampionshipEventIndex 1 }}{{ ordinal (add .ChampionshipEventIndex 1) }}
+                            Evento del Campeonato <strong>{{ .Championship.Name }}</strong>.
+                        </p>
+                    {{ else }}
+                        <p>
+                            Cuando se guarde este evento, se va a agregar al Campeonato <strong>{{ .Championship.Name }}</strong>.
+                            Podés agregar más eventos abajo, o, si ya terminaste de crear el Campeonato, podés completar su configuración acá.
+                        </p>
+                    {{ end }}
+
+                    <div class="float-right mt-5">
+
+                        {{ if not .IsEditing }}
+                            <button class="btn btn-primary" data-toggle="tooltip" name="action" value="addAnotherRace" type="submit" title="Guardar esta configuración y luego configurar otra">Agregar otro Evento</button>
+                            <button class="btn btn-success" data-toggle="tooltip" name="action" value="saveChampionship" type="submit" title="Guardar esta configuración de evento y terminar de crear el campeonato">Terminar de Crear Campeonato</button>
+                        {{ else }}
+                            <input type="hidden" name="Editing" id="Editing" value="{{ .EditingID }}">
+                            <button class="btn btn-primary" data-toggle="tooltip" name="action" value="saveChampionship" type="submit">Guardar Evento</button>
+                        {{ end }}
+                   </div>
+                </div>
+            </div>
+        {{ else if $.IsRaceWeekend }}
+            <div class="card mt-3 border-primary">
+                <div class="card-header text-white bg-primary">
+                    <strong>Guardar Sesión de Fin de Semana de Carrera</strong>
+                </div>
+                <div class="card-body">
+                    <div class="form-group row">
+                        <label for="ParentSessions" class="col-sm-3 col-form-label">Sesión(es) Padre</label>
+
+                        <div class="col-sm-9">
+                            <select name="ParentSessions" id="ParentSessions" class="form-control" multiple>
+                                <option value="{{ $.RaceWeekend.ID.String }}" {{ if $.RaceWeekendSession.HasParent $.RaceWeekend.ID.String }}selected="selected"{{ end }}>Lista de Inscriptos del Fin de Semana de Carrera</option>
+
+                                {{ $numSessions := len $.RaceWeekend.Sessions }}
+
+                                {{ range $index, $session := $.RaceWeekend.Sessions }}
+                                    {{ if not (and $.IsEditing ($.RaceWeekend.HasParentRecursive $session $.EditingID)) }}
+                                        {{ if not (and $.IsEditing (eq $session.ID.String $.EditingID)) }}
+                                            <option value="{{ $session.ID.String }}" {{ if or (and (not $.IsEditing) (eq (sub $numSessions 1) $index)) (and $.IsEditing ($.RaceWeekendSession.HasParent $session.ID.String)) }}selected="selected"{{ end }}>{{ $session.SessionInfo.Name }}</option>
+                                        {{ end }}
+                                    {{ end }}
+                                {{ end }}
+                            </select>
+
+                            <small>
+                                La sesión padre especifica qué sesión se usa para armar la Lista de Inscriptos de esta sesión.
+                                El resultado de la sesión padre (más los filtros aplicados) forma la grilla de largada de esta sesión.
+                                Si elegís "Sin sesión padre", el resto de las opciones se van a ignorar.
+                            </small>
+                        </div>
+                    </div>
+
+                    {{ if $.RaceWeekend.HasLinkedChampionship }}
+
+                        <h3>Puntos de Sesión</h3>
+
+                        <p>Cada Sesión de Fin de Semana de Carrera y Clase de Campeonato tiene su propio recuento de puntos. Las sesiones de Prácticas y Clasificación tienen 0 puntos por defecto, pero pueden tener puntos si querés.</p>
+
+                        <ul class="nav nav-tabs mt-3" role="tablist">
+                            {{ $classCount := 1 }}
+
+                            {{ range $classID, $points := $.RaceWeekendSession.Points }}
+                                {{ $class := $.Championship.ClassByID $classID.String }}
+
+                                <li class="nav-item">
+                                    <a class="nav-link {{ if eq $classCount 1 }}active{{ end }}"
+                                       id="points-{{ $classID.String }}-tab"
+                                       data-toggle="tab"
+                                       href="#points-{{ $classID.String }}"
+                                       role="tab"
+                                       {{ if eq $classCount 1 }}aria-selected="true"{{ end }}
+                                    >
+                                        {{ $class.Name }}
+                                    </a>
+                                </li>
+
+                                {{ $classCount = add $classCount 1 }}
+                            {{ end }}
+                        </ul>
+
+                        {{ $classCount = 1 }}
+
+                        <div class="tab-content">
+                            {{ range $classID, $points := $.RaceWeekendSession.Points }}
+                                {{ $class := $.Championship.ClassByID $classID.String }}
+
+                                <div class="tab-pane fade {{ if eq $classCount 1 }} show active {{ end }}"
+                                     id="points-{{ $classID.String }}"
+                                     role="tabpanel"
+                                     aria-labelledby="points-{{ $classID.String}}-tab"
+                                >
+                                    <input type="hidden" name="ClassID" value="{{ $classID.String }}">
+                                    <input type="hidden" name="NumPointsForClass" value="{{ len $points.Places }}">
+
+                                    {{ template "points" dict "Points" $points "DefaultPoints" $points "IsEditing" true "IsRaceWeekend" true }}
+                                </div>
+
+                                {{ $classCount = add $classCount 1 }}
+                            {{ end }}
+                        </div>
+                    {{ end }}
+
+                    {{ if .IsEditing }}
+                        <p>
+                            Esta configuración editada va a sobrescribir la {{ add .EditingID 1 }}{{ ordinal (add .EditingID 1) }}
+                            Sesión del Fin de Semana de Carrera <strong>{{ .RaceWeekend.Name }}</strong>.
+                        </p>
+                    {{ else }}
+                        <p>
+                            Cuando se guarde esta Sesión, se va a agregar al Fin de Semana de Carrera <strong>{{ .RaceWeekend.Name }}</strong>.
+                            Podés agregar más sesiones abajo, o, si ya terminaste de crear el Fin de Semana de Carrera, podés completar su configuración acá.
+                        </p>
+                    {{ end }}
+
+                    <div class="float-right">
+
+                        {{ if not .IsEditing }}
+                            <button class="btn btn-primary mt-5" data-toggle="tooltip" name="action" value="addAnotherSession" type="submit" title="Guardar esta configuración y luego configurar otra">Agregar otra Sesión</button>
+                            <button class="btn btn-success mt-5" data-toggle="tooltip" name="action" value="saveRaceWeekend" type="submit" title="Guardar esta configuración de sesión y terminar de crear el Fin de Semana de Carrera">Terminar de Crear Fin de Semana de Carrera</button>
+                        {{ else }}
+                            <input type="hidden" name="Editing" id="Editing" value="{{ .EditingID }}">
+                            <button class="btn btn-primary mt-5" data-toggle="tooltip" name="action" value="saveRaceWeekend" type="submit">Guardar Sesión</button>
+                        {{ end }}
+                    </div>
+                </div>
+            </div>
+        {{ else }}
+            <div class="card mt-3 border-primary">
+                <div class="card-header text-white bg-primary">
+                    <strong>Guardar Carrera Personalizada</strong>
+                </div>
+                <div class="card-body">
+
+                    <div class="form-group row">
+                        <label for="CustomRaceName" class="col-sm-3 col-form-label">Nombre de la Carrera Personalizada</label>
+
+                        <div class="col-sm-9">
+
+                            <input
+                                    class="form-control"
+                                    type="text"
+                                    id="CustomRaceName"
+                                    name="CustomRaceName"
+                                    value="{{ .CustomRaceName }}"
+                                    placeholder="Algo para identificar esta Carrera Personalizada"
+                            >
+
+                            <small>El nombre de arriba se va a usar en la página de Carreras Personalizadas.</small>
+                        </div>
+                    </div>
+
+                    {{ if not .IsEditing }}
+                        <div class="form-group row">
+                            <label for="CustomRaceScheduled" class="col-sm-3 col-form-label">Carrera Programada</label>
+
+                            <div class="col-sm-5">
+
+                                <input
+                                        class="form-control"
+                                        type="date"
+                                        id="CustomRaceScheduled"
+                                        name="CustomRaceScheduled"
+                                        value=""
+                                        placeholder=""
+                                >
+
+                                <small>Si estos campos están completos, la carrera va a arrancar a una hora programada. Esta fecha/hora está en tu zona horaria (<span class='timezone'></span>).</small>
+
+                            </div>
+
+                            <div class="col-sm-4">
+
+                                <input
+                                        class="form-control"
+                                        type="time"
+                                        id="CustomRaceScheduledTime"
+                                        name="CustomRaceScheduledTime"
+                                        value=""
+                                        placeholder=""
+                                >
+
+                            </div>
+
+                            <input type='hidden' name="CustomRaceScheduledTimezone" class="event-schedule-timezone">
+                        </div>
+
+                        <div class="form-group row">
+                            <label for="event-schedule-recurrence" class="col-sm-3 col-form-label">Regla de Recurrencia</label>
+
+                            <div class="col-sm-5">
+                                <input type='text' class='form-control' name='event-schedule-recurrence' id='event-schedule-recurrence'>
+                                <small>
+                                    Visitá
+                                    <a target="_blank" href="https://www.textmagic.com/free-tools/rrule-generator">RRule Generator</a>
+                                    para generar una regla de recurrencia. Dejá en blanco si no la necesitás. Solo es válida junto con una hora programada.
+                                </small>
+                            </div>
+                        </div>
+                    {{ end }}
+
+
+                    <div class="float-right mt-5">
+                        {{ if not .IsEditing }}
+                            <button class="btn btn-primary" data-toggle="tooltip" id="save-race-button" name="action" value="justSave" type="submit" title="Guardar esta configuración sin iniciar la carrera">Guardar Carrera Personalizada</button>
+                            <button class="btn btn-success" data-toggle="tooltip" id="start-race-button" name="action" value="startRace" type="submit" title="Guardar esta configuración e iniciar la carrera">Iniciar Carrera</button>
+                        {{ else }}
+                            <input type="hidden" name="Editing" id="Editing" value="{{ .EditingID }}">
+                            <button class="btn btn-primary" data-toggle="tooltip" name="action" value="justSave" type="submit">Guardar Carrera</button>
+                        {{ end }}
+                    </div>
+                </div>
+            </div>
+        {{ end }}
+
+        <div class="clearfix"></div>
+    </form>
+
+
+
+    <script type="text/javascript">
+        const availableTyres = {{ jsonEncode .Tyres }};
+        const possibleEntrants = {{ jsonEncode .PossibleEntrants }};
+        const availableCars = {{ jsonEncode .CarOpts.AsMap }};
+        const surfacePresets = {{ jsonEncode .SurfacePresets }};
+        const fixedSetups = {{ jsonEncode .FixedSetups }};
+
+        const IsEditing = {{ $.IsEditing }};
+    </script>
+{{ end }}

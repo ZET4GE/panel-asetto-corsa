@@ -1,0 +1,245 @@
+{{/* gotype: github.com/JustaPenguin/assetto-server-manager.customRaceListTemplateVars */}}
+
+{{ define "title" }}Carreras Personalizadas{{ end }}
+
+{{ define "custom-race" }}
+    <div class="card mt-4 mb-4">
+        <div class="card-header">
+            <div class="float-left">
+                <strong>{{ $.Race.Name }}</strong>
+            </div>
+
+            <div class="float-right">
+                {{ if isBefore $.Race.Scheduled }}
+                    <span class="text-primary mr-1">
+                        Programada
+
+                        {{ if ne $.Race.ScheduledServerID $.ServerID }}
+                            (en <span class="scheduled-server-id" data-server-id="{{ $.Race.ScheduledServerID }}">otro servidor</span>)
+                        {{ end }}
+
+                        para {{ localFormat $.Race.Scheduled }}
+
+                        {{ if $.Race.HasRecurrenceRule }}
+                            <i class="fa fa-redo-alt ml-1" data-toggle="tooltip-div" data-tooltip-content="{{ $.Race.UUID.String }}-recurrence"></i>
+
+                            <div style="display: none" id="{{ $.Race.UUID.String }}-recurrence">
+                                Recurrente
+                                <span class="rrule-text" data-rrule="{{ $.Race.Recurrence }}"></span>
+                            </div>
+                        {{ end }}
+                    </span>
+                {{ end }}
+
+                {{ if WriteAccess }}
+                    <a class="text-decoration-none" href="/custom/star/{{ $.Race.UUID.String }}">
+                {{ end }}
+
+                    {{ if $.Race.Starred }}
+                        <i class="fas fa-star ml-1 mr-1 text-success" data-toggle="tooltip" title="Destacada"></i>
+                    {{ else }}
+                        <i class="far fa-star ml-1 mr-1 text-body" data-toggle="tooltip" title="No Destacada"></i>
+                    {{ end }}
+
+                {{ if WriteAccess }}
+                    </a>
+
+                    <a class="text-decoration-none" href="/custom/loop/{{ $.Race.UUID.String }}">
+                {{ end }}
+
+                    {{ with $.Race.LoopServer }}
+                        {{ if index $.Race.LoopServer $.ServerID }}
+                            <i class="fas fa-play-circle ml-1 mr-1 text-success" data-toggle="tooltip" title="En Bucle"></i>
+                        {{ else }}
+                            <i class="far fa-play-circle ml-1 mr-1 text-body" data-toggle="tooltip" title="No está en Bucle"></i>
+                        {{ end }}
+                    {{ else }}
+                        <i class="far fa-play-circle ml-1 mr-1 text-body" data-toggle="tooltip" title="No está en Bucle"></i>
+                    {{ end }}
+
+                {{ if WriteAccess }}
+                    </a>
+                {{ end }}
+            </div>
+        </div>
+
+        <div class="card-body">
+            <div class="row">
+                <div class="col-12 col-sm-9">
+                    {{ template "race-card" $.Race }}
+                </div>
+
+                <div class="d-none d-sm-inline-block col-sm-3">
+                    <img class="img img-fluid ml-2 float-right image-track mb-2"
+                         src="/content/tracks/{{ $.Race.RaceConfig.Track }}/ui{{ with $.Race.RaceConfig.TrackLayout }}/{{.}}{{ end }}/preview.png"
+                         alt="{{ $.Race.RaceConfig.Track }} {{ $.Race.RaceConfig.TrackLayout }}"
+                    >
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-12 mt-3">
+                    {{ if WriteAccess }}
+                        <div class="btn-group">
+                            <a class="btn btn-success" href="/custom/load/{{ $.Race.UUID.String }}">Iniciar</a>
+
+                            <button type="button" class="btn btn-success dropdown-toggle dropdown-toggle-split popover-external-html" data-placement="bottom"
+                                    data-toggle="popover" title="Programar Evento" data-html="true"
+                                    id="schedule-{{ $.Race.UUID.String }}"
+                            ></button>
+
+                            <div id="popover-content-schedule-{{ $.Race.UUID.String }}" style="display: none;">
+                                <form action="/custom/schedule/{{ $.Race.UUID.String }}" method="POST">
+                                    <div class="form-group">
+                                        <input type="date" class="form-control" name="event-schedule-date" id="event-schedule-date" required>
+                                        <input type="time" class="form-control" name="event-schedule-time" id="event-schedule-time" required>
+                                        <small class="form-text text-muted">
+                                            Ingresá la fecha y hora correctas para agregar un evento programado.
+                                            Esta fecha/hora está en tu zona horaria (<span class='timezone'></span>).
+                                        </small>
+
+                                        <label for="event-schedule-recurrence" class="col-form-label">Regla de Recurrencia</label>
+                                        <input type="text" class="form-control" name="event-schedule-recurrence" id="event-schedule-recurrence">
+
+                                        <small class="form-text text-muted">
+                                            Visitá
+                                            <a target="_blank" href="https://www.textmagic.com/free-tools/rrule-generator">RRule Generator</a>
+                                            para generar una regla de recurrencia. Dejá en blanco si no la necesitás. Solo es válida junto con una hora programada.
+                                        </small>
+
+                                        <input type="hidden" name="event-schedule-timezone" class="event-schedule-timezone">
+                                    </div>
+
+                                    <button type="submit" name="action" value="add" class="btn btn-sm btn-primary">Programar</button>
+                                    <a href="/custom/schedule/{{ $.Race.UUID.String }}/remove" class="btn btn-sm btn-danger">
+                                        Quitar Evento Programado
+                                    </a>
+                                </form>
+                            </div>
+                        </div>
+
+                        <a class="btn btn-warning" href="/custom/edit/{{ $.Race.UUID.String }}">Editar</a>
+                        <a class="btn btn-primary" href="/custom/new?from={{ $.Race.UUID.String }}">Usar como Plantilla</a>
+
+                        {{ if DeleteAccess }}
+                            <a onClick="return confirm('Entiendo que esto va a eliminar esta configuración de carrera permanentemente');"
+                               class="btn btn-danger"
+                               href="/custom/delete/{{ $.Race.UUID.String }}"
+                            >
+                                Eliminar
+                            </a>
+                        {{ end }}
+                    {{ end }}
+
+
+                    {{ if $.ShowEventDetailsPopup }}
+                        <a class="btn btn-info custom-race-details"
+                           href="#"
+                           data-race-id="{{ $.Race.UUID.String }}"
+                        >
+                            Detalles de la Carrera
+                        </a>
+                    {{ end }}
+                </div>
+            </div>
+        </div>
+    </div>
+{{ end }}
+
+{{ define "custom-race-list" }}
+    {{ range $index, $race := $.Race }}
+        {{ template "custom-race" dict "Race" $race "ServerID" $.ServerID "ShowEventDetailsPopup" $.ShowEventDetailsPopup }}
+    {{ end }}
+{{ end }}
+
+{{ define "content" }}
+    <div class="row">
+        <div class="col-sm-4"></div>
+        <div class="col-sm-4"><h1 class="text-center">Carreras Personalizadas</h1></div>
+        <div class="col-sm-4">
+            {{ if WriteAccess }}
+                <a class="btn btn-success float-right" href="/custom/new">Crear una nueva Carrera Personalizada</a>
+                <div class="clearfix mb-5"></div>
+            {{ end }}
+        </div>
+    </div>
+
+    {{ if WriteAccess }}
+        <p>
+            Las carreras personalizadas son eventos totalmente configurables. Una vez creada una carrera personalizada podés
+            destacarla o agregarla al bucle automático de carreras. Podés usar una carrera personalizada como plantilla para
+            una carrera nueva, lo que va a crear una copia de la carrera personalizada, o editarla directamente. Las carreras
+            personalizadas se pueden iniciar rápidamente en el servidor usando el botón de iniciar carrera.
+        </p>
+    {{ end }}
+
+    <nav>
+        <div class="nav nav-tabs" id="nav-tab" role="tablist">
+            <a class="nav-item nav-link active" id="nav-recent-tab" data-toggle="tab" href="#nav-recent" role="tab" aria-controls="nav-recent" aria-selected="false">
+                <i class="fas fa-clock mr-1"></i> Recientes
+            </a>
+            <a class="nav-item nav-link" id="nav-starred-tab" data-toggle="tab" href="#nav-starred" role="tab" aria-controls="nav-starred" aria-selected="true">
+                <i class="fas fa-star mr-1"></i> Destacadas
+            </a>
+            <a class="nav-item nav-link" id="nav-scheduled-tab" data-toggle="tab" href="#nav-scheduled" role="tab" aria-controls="nav-scheduled" aria-selected="false">
+                <i class="fas fa-calendar mr-1"></i> Programadas
+            </a>
+            <a class="nav-item nav-link" id="nav-autoloop-tab" data-toggle="tab" href="#nav-autoloop" role="tab" aria-controls="nav-autoloop" aria-selected="false">
+                <i class="fas fa-play-circle mr-1"></i> Bucle Automático
+            </a>
+        </div>
+    </nav>
+    <div class="tab-content" id="nav-tabContent">
+        <div class="tab-pane fade show active" id="nav-recent" role="tabpanel" aria-labelledby="nav-recent-tab">
+            {{ if gt (len .Recent) 0 }}
+                {{ template "custom-race-list" dict "Race" .Recent "ServerID" .ServerID "ShowEventDetailsPopup" $.ShowEventDetailsPopup }}
+            {{ else if WriteAccess }}
+                <p class="text-center mt-5">No encontramos ninguna carrera reciente. ¿Querés <a href="/custom/new">crear una ahora</a>?</p>
+            {{ else }}
+                <p class="text-center mt-5">No encontramos ninguna carrera reciente.</p>
+            {{ end }}
+        </div>
+        <div class="tab-pane fade" id="nav-starred" role="tabpanel" aria-labelledby="nav-starred-tab">
+            {{ if gt (len .Starred) 0 }}
+                {{ template "custom-race-list" dict "Race" .Starred "ServerID" .ServerID "ShowEventDetailsPopup" $.ShowEventDetailsPopup }}
+            {{ else if WriteAccess }}
+                <p class="text-center mt-5">Todavía no destacaste ninguna Carrera Personalizada. ¡Podés destacarlas en la pestaña Recientes!</p>
+            {{ else }}
+                <p class="text-center mt-5">¡Todavía no hay carreras personalizadas destacadas!</p>
+            {{ end }}
+        </div>
+        <div class="tab-pane fade" id="nav-scheduled" role="tabpanel" aria-labelledby="nav-scheduled-tab">
+            {{ if gt (len .Scheduled) 0 }}
+                {{ template "custom-race-list" dict "Race" .Scheduled "ServerID" .ServerID "ShowEventDetailsPopup" $.ShowEventDetailsPopup }}
+            {{ else if WriteAccess }}
+                <p class="text-center mt-5">¡Todavía no programaste ninguna carrera!</p>
+            {{ else }}
+                <p class="text-center mt-5">No hay carreras programadas.</p>
+            {{ end }}
+        </div>
+        <div class="tab-pane fade" id="nav-autoloop" role="tabpanel" aria-labelledby="nav-autoloop-tab">
+            {{ if gt (len .Loop) 0 }}
+                <p class="mt-3">
+                    ¡Estas carreras personalizadas se van a repetir en bucle en el servidor mientras esté inactivo! Las carreras
+                    en bucle automático solo van a funcionar si se les permite iniciar automáticamente, por favor no inicies
+                    manualmente estos eventos si querés que se repitan en bucle.
+                </p>
+
+                {{ template "custom-race-list" dict "Race" .Loop "ServerID" .ServerID "ShowEventDetailsPopup" $.ShowEventDetailsPopup }}
+            {{ else if WriteAccess }}
+                <p class="text-center mt-5">
+                    ¡Todavía no se agregó ninguna carrera personalizada a la lista de bucle automático! Usá el ícono de
+                    reproducir para agregar una carrera al bucle. ¡Las carreras agregadas se van a repetir en bucle en el
+                    servidor mientras esté inactivo!
+                </p>
+            {{ else }}
+                <p class="text-center mt-5">¡Todavía no hay carreras personalizadas en bucle!</p>
+            {{ end }}
+        </div>
+    </div>
+
+
+    <div class="modal" tabindex="-1" role="dialog" id="race-details-modal">
+        <!-- content controlled by js -->
+    </div>
+{{ end }}

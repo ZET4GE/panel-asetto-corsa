@@ -1,0 +1,29 @@
+{{/* gotype: github.com/JustaPenguin/assetto-server-manager.auditLogTemplateVars */}}
+
+{{ define "title" }}Registros de Auditoría{{ end }}
+
+{{ define "content" }}
+    <h1 class="text-center">Registros de Auditoría</h1>
+
+    <table class="table table-bordered table-striped">
+        <thead>
+        <tr>
+            <th scope="col">Hora</th>
+            <th scope="col">Usuario</th>
+            <th scope="col">Grupo de Permisos</th>
+            <th scope="col">URL</th>
+            <th scope="col">Método</th>
+        </tr>
+        </thead>
+
+        {{ range $i, $entry := .AuditLogs }}
+            <tr>
+                <td>{{ fullTimeFormat $entry.Time }}</td>
+                <td>{{ $entry.User }}</td>
+                <td>{{ $entry.UserGroup }}</td>
+                <td>{{ $entry.URL }}</td>
+                <td>{{ $entry.Method }}</td>
+            </tr>
+        {{ end }}
+    </table>
+{{ end }}

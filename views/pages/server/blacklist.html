@@ -1,0 +1,18 @@
+{{/* gotype: github.com/JustaPenguin/assetto-server-manager.serverBlacklistTemplateVars */}}
+
+{{ define "title" }}Lista Negra{{ end }}
+
+{{ define "content" }}
+    <h1 class="text-center">Lista Negra</h1>
+
+    <form method="post" action="/blacklist">
+        <label for="blacklist"></label>
+        <textarea id="blacklist" name="blacklist" class="form-control md-textarea text-area">{{ .Text }}</textarea>
+
+        <button class="btn btn-success float-right mt-2" type="submit">Guardar</button>
+    </form>
+
+    <p><small>En este archivo se guardan los GUIDs de usuarios baneados. Si el modo de lista negra está en "2", los usuarios se
+            van a agregar automáticamente a esta lista cuando sean expulsados. Podés editar esta lista manualmente sin importar el modo de lista negra, pero vas a tener que
+            reiniciar el servidor para que los cambios manuales tengan efecto.</small></p>
+{{ end }}

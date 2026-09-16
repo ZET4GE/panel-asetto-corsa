@@ -1,0 +1,73 @@
+{{ define "search-help" }}
+    <h4>Ayuda de Búsqueda</h4>
+
+    <p>Podés escribir en el buscador de forma muy parecida a como usarías Google o cualquier otro campo de búsqueda.</p>
+
+    <ul>
+        <li>
+            <strong>Búsqueda Básica</strong> - por ejemplo, si querés encontrar autos relacionados con Ferrari,
+            podés escribir: <code>ferrari</code>
+        </li>
+        <li>
+            <strong>Búsquedas Booleanas</strong> - digamos que querés encontrar autos Ferrari que no sean vintage,
+            podés usar: <code>+ferrari -vintage</code>.
+        </li>
+        <li>
+            <strong>Búsqueda por Campos Específicos</strong> - se puede buscar en la totalidad de los detalles del auto.
+            Por ejemplo, si querés encontrar autos con una etiqueta específica - digamos, "italy" - podés usar: <code>tags:"italy"</code><br><br>
+
+            <small>
+                La lista completa de campos del auto es:
+
+                <code>author</code>,
+                <code>brand</code>,
+                <code>class</code>,
+                <code>country</code>,
+                <code>description</code>,
+                <code>name</code>,
+                <code>url</code>,
+                <code>version</code>,
+                <code>year</code>,
+                <code>notes</code>,
+                <code>spec.acceleration</code>,
+                <code>spec.bhp</code>,
+                <code>spec.pwratio</code>,
+                <code>spec.torque</code>,
+                <code>spec.weight</code>
+            </small>
+        </li>
+
+        <li>
+            <strong>Búsqueda de Valores Numéricos</strong> - podés buscar valores numéricos, por ejemplo <code>spec.weight:>600</code> va a
+            listar todos los autos con un peso mayor a 600kg.<br><br>
+
+            <small>
+                Todos los valores numéricos disponibles son:
+
+                <code>year</code>,
+                <code>spec.acceleration</code>,
+                <code>spec.bhp</code>,
+                <code>spec.pwratio</code>,
+                <code>spec.torque</code>,
+                <code>spec.weight</code>
+            </small>
+        </li>
+
+        <li>
+            <strong>Búsqueda de contenido Stock, DLC y Mod</strong> - podés buscar específicamente solo contenido stock,
+            solo DLC o solo mod usando uno (o varios) de los siguientes: <code>+stock</code>, <code>+dlc</code>, <code>+mod</code>.
+
+            Podés quitar contenido stock, DLC o mod de los resultados usando uno (o varios) de los siguientes: <code>-stock</code>, <code>-dlc</code>, <code>-mod</code>.
+        </li>
+    </ul>
+
+    <p>Por supuesto, podés combinar todo lo anterior en una sola consulta. Eso se vería más o menos así:</p>
+
+    <div class="text-center">
+        <code>+ferrari -vintage +tags:"semiautomatic" +spec.bhp:>600 -dlc</code><br>
+        <em>"tiene que ser un ferrari", "no tiene que ser vintage", "tiene que tener la etiqueta 'semiautomatic'", "tiene que tener más de 600 BHP", "no tiene que ser DLC".</em>
+    </div>
+    <br>
+
+    <p>Server Manager usa Bleve para ofrecer la búsqueda. Bleve es increíblemente potente y ofrece un gran control sobre las consultas de búsqueda. Acá cubrimos algunos ejemplos de cómo sacarle el máximo provecho a la búsqueda, pero para ejemplos y sintaxis más detallados consultá la <a href="https://blevesearch.com/docs/Query-String-Query/">Documentación de Bleve</a>.</p>
+{{ end }}

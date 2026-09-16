@@ -1,0 +1,21 @@
+{{ define "title" }}Importar Fin de Semana de Carrera{{ end }}
+
+{{ define "content" }}
+    <h1 class="text-center">Importar Fin de Semana de Carrera</h1>
+
+    <form method="post" action="/race-weekend/import">
+        <label for="import"></label>
+        <textarea id="import" name="import" placeholder="¡Pegá acá el JSON de tu Fin de Semana de Carrera!" class="form-control md-textarea text-area"></textarea>
+
+        <button class="btn btn-success float-right mt-2" type="submit">Guardar</button>
+    </form>
+
+    <p>
+        <small>
+            Acá podés importar Fines de Semana de Carrera en formato JSON (este formato coincide con el que se genera al
+            exportar un Fin de Semana de Carrera). No recomendamos crear estos datos manualmente, ya que el formato es
+            bastante complejo. Sin embargo, si querés mover Fines de Semana de Carrera entre servidores pero no tenés
+            acceso a los archivos, ¡podés usar esta función!
+        </small>
+    </p>
+{{ end }}

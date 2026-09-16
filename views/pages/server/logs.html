@@ -1,0 +1,35 @@
+{{ define "title" }}Registros del Servidor{{ end }}
+
+{{ define "content" }}
+    <h1 class="text-center">Registros del Servidor</h1>
+
+    <p>Esta página te puede ayudar a diagnosticar problemas con el servidor, el manager o cualquier plugin. También podés revisar la
+        <a href="/current-config">configuración actual del servidor</a> para ver si coincide con lo que esperás.</p>
+
+    <h2>Servidor de Assetto Corsa</h2>
+    <div class="card card-body bg-light card-logs">
+        <pre id="server-logs"></pre>
+    </div>
+    <br>
+    <a class="btn btn-primary" href="/api/log-download/server">Descargar Registro del Servidor</a>
+
+    <hr>
+
+    <h2>Server Manager</h2>
+
+    <div class="card card-body bg-light card-logs">
+        <pre id="manager-logs"></pre>
+    </div>
+    <br>
+    <a class="btn btn-primary" href="/api/log-download/manager">Descargar Registro del Manager</a>
+
+    <hr>
+
+    <h2>Plugins</h2>
+
+    <div class="card card-body bg-light card-logs">
+        <pre id="plugin-logs"></pre>
+    </div>
+    <br>
+    <a class="btn btn-primary" href="/api/log-download/plugins">Descargar Registro de Plugins</a>
+{{ end }}

@@ -1,0 +1,21 @@
+# Live secrets/config (session key, steam login, etc.)
+/config.yml
+
+# Runtime data
+/server_manager.db
+/server-manager.log
+*.log
+
+# Per-platform release binaries (large, not source)
+/server-manager
+/linux/
+/windows/
+/sm.zip
+
+# Pre-customization backups (kept locally only)
+/static.bak-*/
+/views.bak-*/
+
+# OS
+.DS_Store
+Thumbs.db

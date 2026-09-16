@@ -1,0 +1,157 @@
+{{/* gotype: github.com/JustaPenguin/assetto-server-manager.RaceTemplateVars */}}
+
+{{ define "title" }}Crear un Fin de Semana de Carrera{{ end }}
+
+{{ define "content" }}
+    <h1 class="text-center">
+        {{ if not $.IsEditing }}
+            Crear un nuevo Fin de Semana de Carrera
+        {{ else }}
+            Editar el Fin de Semana de Carrera {{ $.RaceWeekend.Name }}
+        {{ end }}
+    </h1>
+
+    {{ if $.RaceWeekend.HasLinkedChampionship }}
+        <h4 class="text-center">en el Campeonato {{ $.Championship.Name }}</h4>
+    {{ end }}
+
+    {{ template "raceweekend-premium" dict "IsPremium" $.IsPremium }}
+
+    <form action="/race-weekends/new/submit" method="post" id="raceweekend-form" data-safe-submit>
+        <div class="race-setup">
+            <div class="card mt-3 border-secondary" id="entrants">
+                <div class="card-header">
+                    <strong>Fin de Semana de Carrera</strong>
+
+                    {{ if .IsEditing }}
+                        <button type="submit" class="btn btn-success float-right">Guardar Fin de Semana de Carrera</button>
+                    {{ end }}
+                </div>
+
+                <div class="card-body">
+                    <div class="form-group row">
+                        <label for="RaceWeekendName" class="col-sm-3 col-form-label">Nombre</label>
+
+                        <div class="col-sm-9">
+                            <input type="text" class="form-control" id="RaceWeekendName" name="RaceWeekendName" required
+                                   placeholder="Mi Fin de Semana de Carrera increíble" value="{{ $.RaceWeekend.Name }}">
+                        </div>
+                    </div>
+
+                    {{ if not $.RaceWeekend.HasLinkedChampionship }}
+
+                        <div class="form-group row">
+                            <label for="Cars" class="col-sm-3 col-form-label">
+                                Autos
+                            </label>
+
+                            <div class="col-sm-9">
+                                {{ template "cars" dict "CarOpts" $.CarOpts "Current" nil "ValidCarIDs" $.RaceWeekend.GetEntryList.CarIDs  }}
+                            </div>
+                        </div>
+
+
+                        <div class="entrants-block">
+                            <div id="entrantTemplate" class="entrant">
+                                {{ template "entrant" dict "IsEditing" $.IsEditing "IsChampionship" false "NameAndGUIDRequired" true }}
+                            </div>
+
+                            {{ range $index, $entrant := $.RaceWeekend.GetEntryList.AsSlice }}
+                                <div class="entrant">
+                                    {{ template "entrant" dict "Entrant" $entrant "IsChampionshipEvent" false "IsEditing" $.IsEditing "IsChampionship" false "NameAndGUIDRequired" true }}
+                                </div>
+                            {{ else }}
+                                {{ if not $.IsEditing }}
+                                    <div class="entrant">
+                                        {{ template "entrant" dict "IsEditing" $.IsEditing "IsChampionship" false "NameAndGUIDRequired" true }}
+                                    </div>
+                                {{ end }}
+                            {{ end }}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-8 pt-2">
+                                <p>El Auto, Skin, Lastre, Restrictor y Setup Fijo del último Participante se van a clonar en los nuevos Participantes.</p>
+                            </div>
+                            <div class="col-md-4 text-right">
+                                <input class="form-control numEntrantsToAdd" type="number" name="NumEntrantsToAdd" value="1" min="0" max="40">
+
+                                <button class="btn btn-warning addEntrant">Agregar Participante(s)</button>
+                            </div>
+                        </div>
+                    {{ else }}
+                        <input type="hidden" name="ChampionshipID" id="ChampionshipID" value="{{ $.Championship.ID }}">
+                    {{ end }}
+
+                    <div class="clearfix"></div>
+                </div>
+            </div>
+        </div>
+
+        {{ if not $.RaceWeekend.HasLinkedChampionship }}
+            <div class="card mt-3 border-secondary race-setup">
+                <div class="card-header">
+                    <strong>Auto Espectador</strong>
+                </div>
+
+                <div class="d-none">
+                    {{ template "cars" dict "CarOpts" $.CarOpts "Current" nil "SelectAllCars" true }}
+
+                    <input type="hidden" name="NumAvailableSpectatorCars" value="{{ len $.CarOpts }}">
+                </div>
+
+                <div class="card-body" id="entrants">
+                    <p>
+                        Podés configurar un Auto Espectador para este Fin de Semana de Carrera. Los Autos Espectadores se
+                        agregan automáticamente al final de la Lista de Inscriptos de cada Sesión del Fin de Semana de
+                        Carrera, y se descuentan de los resultados de cualquier sesión.
+                    </p>
+
+                    {{ if $.IsHosted }}
+                        <p class="text-danger">Tené en cuenta que el Auto Espectador ocupa 1 lugar en tu servidor alojado. ¡Los eventos pueden fallar al iniciar si tenés demasiados lugares en uso!</p>
+                    {{ end }}
+
+                    <div class="form-group row">
+                        <label for="SpectatorCar.Enabled" class="col-sm-3 col-form-label">Habilitado</label>
+
+                        <div class="col-sm-9">
+                            <input type="checkbox"
+                                   id="SpectatorCarEnabled"
+                                   name="SpectatorCar.Enabled"
+                                   class="spectator-toggle"
+                                    {{ if $.RaceWeekend.HasSpectatorCar }}
+                                        checked="checked"
+                                    {{ end }}
+                            ><br><br>
+                        </div>
+                    </div>
+
+
+                    <div class="visible-spectator-enabled" {{ if not $.RaceWeekend.HasSpectatorCar }} style="display: none" {{ end }}>
+                        <div class="entrant">
+                            {{ template "entrant" dict "Entrant" $.RaceWeekend.SpectatorCar "IsChampionshipEvent" false "IsEditing" $.IsEditing "IsChampionship" false "IsSpectatorCar" true }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {{ end }}
+
+        <div class="mt-5">
+            {{ if .IsEditing }}
+                <input type="hidden" name="Editing" id="Editing" value="{{ $.RaceWeekend.ID.String }}">
+                <button type="submit" class="btn btn-success float-right">Guardar Fin de Semana de Carrera</button>
+            {{ else }}
+                <div class="float-right">
+                    <button type="submit" name="action" value="addEvent" class="btn btn-success">Agregar una Sesión</button>
+                </div>
+            {{ end }}
+        </div>
+    </form>
+
+    <script type="text/javascript">
+        const availableTyres = {{ jsonEncode .Tyres }};
+        const possibleEntrants = {{ jsonEncode .PossibleEntrants }};
+        const availableCars = {{ jsonEncode .CarOpts.AsMap }};
+        const fixedSetups = {{ jsonEncode .FixedSetups }};
+    </script>
+{{ end }}

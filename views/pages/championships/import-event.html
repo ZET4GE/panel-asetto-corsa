@@ -1,0 +1,90 @@
+{{/* gotype: github.com/JustaPenguin/assetto-server-manager.eventImportTemplateVars */}}
+
+{{ define "title" }}Importar un Evento de Campeonato{{ end }}
+
+{{ define "content" }}
+    {{ $writeAccess := WriteAccess }}
+
+    <h1 class="text-center">Importar un Evento de Campeonato para {{ prettify .Event.RaceSetup.Track false }} ({{ prettify .Event.RaceSetup.TrackLayout true }})</h1>
+
+
+    <form action="/championship/{{ .ChampionshipID }}/event/{{ .Event.ID.String }}/import" method="post" data-safe-submit>
+
+        <div class="card mt-3 border-secondary">
+            <div class="card-header">
+                <strong>Eventos</strong>
+            </div>
+
+            <div class="card-body">
+
+                <p>Elegí los resultados para las siguientes sesiones (podés dejar algunas sesiones sin seleccionar).</p>
+
+                <div class="form-group row">
+                    <label for="RaceResult" class="col-sm-3 col-form-label">Archivo de Resultado de Carrera</label>
+
+                    <div class="col-sm-9">
+                        <select name="RaceResult" id="RaceResult" class="form-control">
+                            <option value="">ninguno</option>
+                            {{ range $index, $result := .Results }}
+                                {{ if eq $result.Type "RACE" }}
+                                    <option value="{{ $result.SessionFile }}">{{ $result.TrackName }} ({{ $result.TrackConfig }}) el {{ $result.Date }}</option>
+                                {{ end }}
+                            {{ end }}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <label for="SecondRaceResult" class="col-sm-3 col-form-label">Archivo de <strong>Segunda</strong> Carrera</label>
+
+                    <div class="col-sm-9">
+                        <select name="SecondRaceResult" id="SecondRaceResult" class="form-control">
+                            <option value="">ninguno</option>
+                            {{ range $index, $result := .Results }}
+                                {{ if eq $result.Type "RACE" }}
+                                    <option value="{{ $result.SessionFile }}">{{ $result.TrackName }} ({{ $result.TrackConfig }}) el {{ $result.Date }}</option>
+                                {{ end }}
+                            {{ end }}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <label for="QualifyingResult" class="col-sm-3 col-form-label">Archivo de Resultado de Clasificación</label>
+
+                    <div class="col-sm-9">
+                        <select name="QualifyingResult" id="QualifyingResult" class="form-control">
+                            <option value="">ninguno</option>
+                            {{ range $index, $result := .Results }}
+                                {{ if eq $result.Type "QUALIFY" }}
+                                    <option value="{{ $result.SessionFile }}">{{ $result.TrackName }} ({{ $result.TrackConfig }}) el {{ $result.Date }}</option>
+                                {{ end }}
+                            {{ end }}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <label for="PracticeResult" class="col-sm-3 col-form-label">Archivo de Resultado de Práctica</label>
+
+                    <div class="col-sm-9">
+                        <select name="PracticeResult" id="PracticeResult" class="form-control">
+                            <option value="">ninguno</option>
+                            {{ range $index, $result := .Results }}
+                                {{ if eq $result.Type "PRACTICE" }}
+                                    <option value="{{ $result.SessionFile }}">{{ $result.TrackName }} ({{ $result.TrackConfig }}) el {{ $result.Date }}</option>
+                                {{ end }}
+                            {{ end }}
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-success float-right">Importar Evento</button>
+
+            </div>
+
+        </div>
+
+    </form>
+
+    <div class="clearfix"></div>
+{{ end }}

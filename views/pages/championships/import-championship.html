@@ -1,0 +1,16 @@
+{{ define "title" }}Importar Campeonato{{ end }}
+
+{{ define "content" }}
+    <h1 class="text-center">Importar Campeonato</h1>
+
+    <form method="post" action="/championship/import">
+        <label for="import"></label>
+        <textarea id="import" name="import" placeholder="¡Pegá acá el JSON de tu campeonato!" class="form-control md-textarea text-area"></textarea>
+
+        <button class="btn btn-success float-right mt-2" type="submit">Guardar</button>
+    </form>
+
+    <p><small>Acá podés importar campeonatos en formato JSON (este formato coincide con el que se genera al exportar un
+        campeonato). No recomendamos crear estos datos manualmente, ya que el formato es bastante complejo. Sin embargo,
+        si querés mover campeonatos entre servidores pero no tenés acceso a los archivos, ¡podés usar esta función!</small></p>
+{{ end }}
