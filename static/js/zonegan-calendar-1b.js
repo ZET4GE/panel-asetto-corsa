@@ -140,12 +140,22 @@
     /* --- clasificación de eventos para la leyenda --- */
     var PRACTICE = /pr[aá]ctic|practice|qualif|clasific/i;
     var LOOP = /bucle|loop|repet/i;
+    /* el backend inyecta un evento sintético "no-events" (ID fijo, 3 h de
+       duración desde "ahora") cuando no hay carreras programadas; en las
+       vistas de semana/lista se veía como aviso, pero en la grilla de mes
+       aparece como un chip de evento roto pisando el día de hoy. Se oculta. */
+    var NO_EVENTS = /no scheduled events/i;
 
     function paintEvents() {
         var events = root.querySelectorAll(".fc-event, .fc-daygrid-event, a.fc-day-grid-event");
         for (var i = 0; i < events.length; i++) {
             var ev = events[i];
             var txt = ev.textContent || "";
+            if (NO_EVENTS.test(txt)) {
+                var holder = ev.closest(".fc-daygrid-event-harness") || ev.closest(".fc-daygrid-day-events") || ev;
+                holder.style.display = "none";
+                continue;
+            }
             ev.classList.remove("zg-ev-champ", "zg-ev-practice", "zg-ev-loop");
             if (LOOP.test(txt)) {
                 ev.classList.add("zg-ev-loop");
