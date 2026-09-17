@@ -20,7 +20,7 @@
         </div>
 
         {{ if $championship.ACSR }}
-            <div class="text-center">
+            <div class="zg-page-lead">
                 <em>
                     Un Campeonato de <a href="https://acsr.assettocorsaservers.com">Assetto Corsa Skill Rating</a>
                 </em>
@@ -28,7 +28,7 @@
         {{ end }}
 
         {{ if $championship.SignUpAvailable }}
-            <div class="card border-primary mb-3 mt-3">
+            <div class="card border-primary mb-3 mt-3 zg-form-card zg-form-card-accent">
                 <div class="card-header bg-primary text-white"><strong>Inscribite en este Campeonato</strong></div>
 
                 <div class="card-body">
@@ -75,7 +75,7 @@
                         {{ end }}
                     {{ end }}
 
-                    <div class="float-right">
+                    <div class="float-right zg-actions-bar">
                         <a class="btn btn-info {{ if not $meetsACSRGates }}disabled{{ end }}" href="/championship/{{ $championship.ID.String }}/sign-up/steam">Inscribirme con Steam</a>
 
                         <small class="pl-2 pr-2">o</small>
@@ -88,7 +88,7 @@
             {{ $numPendingSignups := $championship.NumPendingSignUps }}
 
             {{ if and WriteAccess (gt $numPendingSignups 0) }}
-                <div class="card border-success mb-3 mt-3">
+                <div class="card border-success mb-3 mt-3 zg-form-card">
                     <div class="card-header bg-success text-white"><strong>¡{{ if gt $numPendingSignups 1 }}Solicitudes{{ else }}Solicitud{{ end }} de inscripción pendiente{{ if gt $numPendingSignups 1 }}s{{ end }} de aprobación!</strong></div>
 
                     <div class="card-body">
@@ -102,12 +102,12 @@
 
 
         {{ if gt $championship.Progress 0.0 }}
-            <div class="progress mb-5 mt-5">
+            <div class="progress zg-progress-bs mb-5 mt-5">
                 <div class="progress-bar bg-success progress-bar-striped" id="progress-bar" role="progressbar" style="width: {{ int $championship.Progress }}%;" aria-valuenow="{{ int $championship.Progress }}" aria-valuemin="0" aria-valuemax="100">{{ int $championship.Progress }}%</div>
             </div>
         {{ end }}
 
-        <ul class="nav nav-tabs" role="tablist">
+        <ul class="nav nav-tabs zg-subnav" role="tablist">
             {{ if gt $championship.Progress 0.0 }}
                 <li class="nav-item">
                     <a class="nav-link {{ if or (eq $championship.DefaultTab "Driver Standings") (eq $championship.DefaultTab "") }}active{{ end }}"
@@ -534,7 +534,7 @@
         {{ end }}
 
 
-        <div class="float-right">
+        <div class="float-right zg-actions-bar">
             {{ if $writeAccess }}
                 <div class="btn-group">
 
@@ -621,7 +621,7 @@
             </div>
         </div>
 
-        <h2>Eventos</h2>
+        <h2 class="zg-section-title">Eventos</h2>
 
         <p>Este Campeonato tiene actualmente {{ len $championship.Events }} eventos configurados.</p>
 

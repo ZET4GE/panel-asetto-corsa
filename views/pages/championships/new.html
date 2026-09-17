@@ -27,7 +27,7 @@
 
     <form action="/championships/new/submit" method="post" id="championship-form" data-safe-submit>
 
-        <div class="card mt-3 border-secondary">
+        <div class="card mt-3 border-secondary zg-form-card">
             <div class="card-header">
                 <strong>Campeonato</strong>
 
@@ -336,7 +336,7 @@
         </div>
 
         {{ if $.IsPremium }}
-            <div class="card mt-3 border-secondary race-setup hidden-open-championship">
+            <div class="card mt-3 border-secondary zg-form-card race-setup hidden-open-championship">
                 <div class="card-header">
                     <strong>Auto Espectador</strong>
                 </div>
@@ -382,7 +382,7 @@
             </div>
         {{ end }}
 
-        <div class="card mt-3 border-secondary">
+        <div class="card mt-3 border-secondary zg-form-card">
             <div class="card-header">
                 <strong>Formulario de Inscripción</strong>
             </div>
@@ -525,7 +525,7 @@
                 <input type="hidden" name="Editing" id="Editing" value="{{ $f.ID.String }}">
                 <button type="submit" class="btn btn-success float-right">Guardar Campeonato</button>
             {{ else }}
-                <div class="float-right">
+                <div class="float-right zg-actions-bar">
                     <button type="submit" name="action" value="addRaceWeekend" class="btn btn-info">Agregar un Fin de Semana de Carrera</button>
                     <button type="submit" name="action" value="addEvent" class="btn btn-success">Agregar un Evento</button>
                 </div>

@@ -60,7 +60,7 @@
           data-safe-submit
     >
 
-        <div class="card mt-3 border-secondary">
+        <div class="card mt-3 border-secondary zg-form-card">
             <div class="card-header">
                 <strong>Circuito{{ if not (or .IsChampionship .IsRaceWeekend) }} y Autos {{ end }}</strong>
 
@@ -204,7 +204,7 @@
         </div>
 
         {{ if and .IsChampionship .ChampionshipHasAtLeastOnceRace }}
-            <div class="card mt-3 border-primary">
+            <div class="card mt-3 border-primary zg-form-card zg-form-card-accent">
                 <div class="card-header text-white bg-primary">
                     <strong>Guardar Carrera de Campeonato</strong>
                 </div>
@@ -221,7 +221,7 @@
                         Podés agregar más carreras abajo, o, si ya terminaste de crear el campeonato, podés completar su configuración acá.
                     </p>
 
-                    <div class="float-right">
+                    <div class="float-right zg-actions-bar">
                         <button class="btn btn-primary mt-5" data-toggle="tooltip" name="action" value="addAnotherRace" type="submit" title="Guardar esta configuración y luego configurar otra">Agregar otra Carrera</button>
                         <button class="btn btn-success mt-5" data-toggle="tooltip" name="action" value="saveChampionship" type="submit" title="Guardar esta configuración de carrera y terminar de crear el campeonato">Terminar de Crear Campeonato</button>
                     </div>
@@ -230,7 +230,7 @@
         {{ end }}
 
 
-        <div class="card mt-3 border-secondary">
+        <div class="card mt-3 border-secondary zg-form-card">
             <div class="card-header">
                 <strong>Sesion{{ if not $.IsRaceWeekend }}es{{ end }}</strong>
             </div>
@@ -283,7 +283,7 @@
 
                     <hr>
                 {{ else }}
-                    <ul class="nav nav-tabs" role="tablist">
+                    <ul class="nav nav-tabs zg-subnav" role="tablist">
                         {{ range $index, $sessionType := .AvailableSessions }}
 
                             {{ $hasSession := $f.HasSession $sessionType }}
@@ -670,7 +670,7 @@
         </div>
 
 
-        <div class="card mt-3 border-secondary">
+        <div class="card mt-3 border-secondary zg-form-card">
             <div class="card-header">
                 <strong>Lista de Inscriptos</strong>
             </div>
@@ -950,7 +950,7 @@
             </div>
         </div>
 
-        <div class="card mt-3 border-secondary">
+        <div class="card mt-3 border-secondary zg-form-card">
             <div class="card-header">
                 <strong>Ayudas</strong>
             </div>
@@ -1045,7 +1045,7 @@
         </div>
 
 
-        <div class="card mt-3 border-secondary">
+        <div class="card mt-3 border-secondary zg-form-card">
             <div class="card-header">
                 <strong>Clima</strong>
             </div>
@@ -1145,7 +1145,7 @@
                     {{ range $index, $weather := $f.Weather }}
 
                         <div class="col-sm-12 weather">
-                            <div class="card mb-5 border-primary">
+                            <div class="card mb-5 border-primary zg-form-card zg-form-card-accent">
                                 <div class="card-header">
                                     <strong class="weather-num">{{ $weatherIndex }}</strong>
 
@@ -1408,7 +1408,7 @@
         </div>
 
 
-        <div class="card mt-3 border-secondary">
+        <div class="card mt-3 border-secondary zg-form-card">
             <div class="card-header">
                 <strong>Realismo</strong>
             </div>
@@ -1514,7 +1514,7 @@
 
 
 
-                <h4>Circuito Dinámico</h4>
+                <h4 class="zg-section-title zg-sm">Circuito Dinámico</h4>
 
                 <div class="form-group row">
                     <label for="SurfacePreset" class="col-sm-3 col-form-label">Preset de Superficie</label>
@@ -1618,7 +1618,7 @@
         </div>
 
 
-        <div class="card mt-3 border-secondary">
+        <div class="card mt-3 border-secondary zg-form-card">
             <div class="card-header">
                 <strong>Reglas</strong>
             </div>
@@ -1771,7 +1771,7 @@
         </div>
 
         {{ if $.ShowOverridePasswordCard }}
-            <div class="card mt-3 border-secondary">
+            <div class="card mt-3 border-secondary zg-form-card">
                 <div class="card-header">
                     <strong>Opciones del Servidor</strong>
                 </div>
@@ -1858,7 +1858,7 @@
         {{ end }}
 
         {{ if .IsChampionship }}
-            <div class="card mt-3 border-primary">
+            <div class="card mt-3 border-primary zg-form-card zg-form-card-accent">
                 <div class="card-header text-white bg-primary">
                     <strong>Guardar Evento de Campeonato</strong>
                 </div>
@@ -1876,7 +1876,7 @@
                         </p>
                     {{ end }}
 
-                    <div class="float-right mt-5">
+                    <div class="float-right zg-actions-bar mt-5">
 
                         {{ if not .IsEditing }}
                             <button class="btn btn-primary" data-toggle="tooltip" name="action" value="addAnotherRace" type="submit" title="Guardar esta configuración y luego configurar otra">Agregar otro Evento</button>
@@ -1889,7 +1889,7 @@
                 </div>
             </div>
         {{ else if $.IsRaceWeekend }}
-            <div class="card mt-3 border-primary">
+            <div class="card mt-3 border-primary zg-form-card zg-form-card-accent">
                 <div class="card-header text-white bg-primary">
                     <strong>Guardar Sesión de Fin de Semana de Carrera</strong>
                 </div>
@@ -1922,11 +1922,11 @@
 
                     {{ if $.RaceWeekend.HasLinkedChampionship }}
 
-                        <h3>Puntos de Sesión</h3>
+                        <h3 class="zg-section-title zg-sm">Puntos de Sesión</h3>
 
                         <p>Cada Sesión de Fin de Semana de Carrera y Clase de Campeonato tiene su propio recuento de puntos. Las sesiones de Prácticas y Clasificación tienen 0 puntos por defecto, pero pueden tener puntos si querés.</p>
 
-                        <ul class="nav nav-tabs mt-3" role="tablist">
+                        <ul class="nav nav-tabs zg-subnav mt-3" role="tablist">
                             {{ $classCount := 1 }}
 
                             {{ range $classID, $points := $.RaceWeekendSession.Points }}
@@ -1982,7 +1982,7 @@
                         </p>
                     {{ end }}
 
-                    <div class="float-right">
+                    <div class="float-right zg-actions-bar">
 
                         {{ if not .IsEditing }}
                             <button class="btn btn-primary mt-5" data-toggle="tooltip" name="action" value="addAnotherSession" type="submit" title="Guardar esta configuración y luego configurar otra">Agregar otra Sesión</button>
@@ -1995,7 +1995,7 @@
                 </div>
             </div>
         {{ else }}
-            <div class="card mt-3 border-primary">
+            <div class="card mt-3 border-primary zg-form-card zg-form-card-accent">
                 <div class="card-header text-white bg-primary">
                     <strong>Guardar Carrera Personalizada</strong>
                 </div>
@@ -2069,7 +2069,7 @@
                     {{ end }}
 
 
-                    <div class="float-right mt-5">
+                    <div class="float-right zg-actions-bar mt-5">
                         {{ if not .IsEditing }}
                             <button class="btn btn-primary" data-toggle="tooltip" id="save-race-button" name="action" value="justSave" type="submit" title="Guardar esta configuración sin iniciar la carrera">Guardar Carrera Personalizada</button>
                             <button class="btn btn-success" data-toggle="tooltip" id="start-race-button" name="action" value="startRace" type="submit" title="Guardar esta configuración e iniciar la carrera">Iniciar Carrera</button>

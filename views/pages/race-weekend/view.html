@@ -13,7 +13,7 @@
             <h1 class="zg-page-title">{{ $.RaceWeekend.Name }}</h1>
             <div class="zg-page-rule"></div>
         </div>
-        <p class="text-center">
+        <p class="zg-page-lead">
             <em>
                 {{ if $.RaceWeekend.HasLinkedChampionship }}
                     Un Fin de Semana de Carrera del <a href="/championship/{{ $.RaceWeekend.Championship.ID.String }}">Campeonato {{ $.RaceWeekend.Championship.Name }}</a>
@@ -24,7 +24,7 @@
         </p>
 
         {{ if gt $.RaceWeekend.Progress 0.0 }}
-            <div class="progress mb-5 mt-5">
+            <div class="progress zg-progress-bs mb-5 mt-5">
                 <div class="progress-bar bg-success progress-bar-striped" id="progress-bar" role="progressbar" style="width: {{ int $.RaceWeekend.Progress }}%;" aria-valuenow="{{ int $.RaceWeekend.Progress }}" aria-valuemin="0" aria-valuemax="100">{{ int $.RaceWeekend.Progress }}%</div>
             </div>
         {{ end }}
@@ -32,7 +32,7 @@
         {{ template "raceweekend-premium" dict "IsPremium" $.IsPremium }}
 
         {{ if not $.RaceWeekend.HasLinkedChampionship }}
-            <h2>Participantes</h2>
+            <h2 class="zg-section-title">Participantes</h2>
 
             <div class="table-responsive">
                 <table class="table table-bordered table-striped">
@@ -63,7 +63,7 @@
             </div>
         {{ end }}
 
-        <div class="float-right">
+        <div class="float-right zg-actions-bar">
             {{ if $.RaceWeekend.HasLinkedChampionship }}
                 <a class="btn btn-info" href="/championship/{{ $.RaceWeekend.Championship.ID.String }}">Ver Campeonato</a>
             {{ end }}
@@ -93,7 +93,7 @@
 
         <div class="clearfix"></div>
 
-        <h2>Sesiones</h2>
+        <h2 class="zg-section-title">Sesiones</h2>
 
         <p>Este Fin de Semana de Carrera tiene {{ len $.RaceWeekend.Sessions }} sesiones. Para ver cómo los Resultados de una Sesión definen la Lista de Inscriptos de la siguiente Sesión, hacé clic en la flecha entre las dos Sesiones.</p>
 
@@ -128,7 +128,7 @@
 
                         <strong>{{ $acSession.Name }}</strong>
 
-                        <div class="float-right">
+                        <div class="float-right zg-actions-bar">
                             {{ if ne $acSession.Time 0 }}
                                 {{ $acSession.Time }} minutos
 
@@ -345,7 +345,7 @@
 
     {{ if gt (len $sortedSessions) 0 }}
         <div class="container" id="race-weekend-results">
-            <h2>Resultados</h2>
+            <h2 class="zg-section-title">Resultados</h2>
 
             <div class="accordion mb-5" id="sessionResults">
                 {{ range $sessionIndex, $session := $sortedSessions }}
@@ -366,7 +366,7 @@
                                 {{ prettify $session.RaceConfig.Track false }} {{ with $session.RaceConfig.TrackLayout }}({{ prettify . true }}){{ end }}
                             {{ end }}
 
-                            <div class="float-right">
+                            <div class="float-right zg-actions-bar">
                                 {{ if ne $acSession.Time 0 }}
                                     {{ $acSession.Time }} minutos
 
@@ -416,7 +416,7 @@
             </div>
 
             {{ if $.RaceWeekend.HasLinkedChampionship }}
-                <h2>Puntos</h2>
+                <h2 class="zg-section-title">Puntos</h2>
 
                 <p>Este Fin de Semana de Carrera está vinculado al <a href="/championship/{{ $.RaceWeekend.Championship.ID.String }}">Campeonato {{ $.RaceWeekend.Championship.Name }}</a>. Podés revisar los puntos de cada Sesión a continuación.</p>
 
