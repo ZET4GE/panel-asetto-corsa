@@ -1,20 +1,34 @@
 {{/* gotype: github.com/JustaPenguin/assetto-server-manager.BaseTemplateVars */}}
-{{/* Reestilado 1b. #calendar lo sigue llenando el JS del bundle; el estilo de la
-     grilla y los eventos está en zonegan-1b.css (sección CALENDARIO). */}}
+{{/* Pantalla 4a — "afiche de grilla" (1b).
+     IMPORTANTE: #calendar lo sigue inicializando y llenando FullCalendar desde
+     el bundle.js del panel con el feed /events.ics. Este template NO dibuja la grilla:
+     solo pone el encabezado grande + los controles, y zonegan-calendar-1b.js
+     los engancha a la instancia real de FullCalendar (mes a mes, datos reales).
+     No se toca ningún id/clase que use el bundle. */}}
 
 {{ define "title" }}Calendario{{ end }}
 
 {{ define "content" }}
-    <div class="zg-page-head">
+    <div class="zg-page-head zg-cal-head">
         <div class="d-flex align-items-end justify-content-between flex-wrap">
             <div>
                 <div class="zg-page-eyebrow">Eventos programados</div>
-                <h1 class="zg-page-title">Calendario</h1>
+                <div class="zg-cal-period">
+                    <h1 class="zg-page-title zg-cal-month" id="zg-cal-month">Calendario</h1>
+                    <span class="zg-cal-year" id="zg-cal-year"></span>
+                </div>
             </div>
 
-            <div class="zg-page-actions">
-                <a href="/events.ics" class="btn zg-btn-outline">
-                    <i class="fas fa-calendar mr-1"></i> Suscribirse al Feed del Calendario
+            <div class="zg-page-actions zg-cal-nav">
+                <button type="button" class="zg-cal-arrow" id="zg-cal-prev" title="Mes anterior" aria-label="Mes anterior">
+                    <i class="fas fa-caret-left"></i>
+                </button>
+                <button type="button" class="zg-cal-arrow" id="zg-cal-next" title="Mes siguiente" aria-label="Mes siguiente">
+                    <i class="fas fa-caret-right"></i>
+                </button>
+                <button type="button" class="zg-cal-today" id="zg-cal-today">Hoy</button>
+                <a href="/events.ics" class="btn zg-btn-outline ml-2">
+                    <i class="fas fa-calendar mr-1"></i> Suscribirse al Feed
                 </a>
             </div>
         </div>
@@ -22,5 +36,15 @@
         <div class="zg-page-rule"></div>
     </div>
 
-    <div id="calendar"></div>
+    <div class="zg-cal">
+        <div id="calendar"></div>
+    </div>
+
+    <div class="zg-cal-legend">
+        <span><span class="zg-cal-key zg-cal-key-champ"></span>Campeonato / carrera</span>
+        <span><span class="zg-cal-key zg-cal-key-practice"></span>Práctica</span>
+        <span><span class="zg-cal-key zg-cal-key-loop"></span>Bucle automático</span>
+    </div>
+
+    <script src="{{ asset "/static/js/zonegan-calendar-1b.js" }}"></script>
 {{ end }}

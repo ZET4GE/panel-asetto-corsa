@@ -443,37 +443,154 @@ a.card.zg-plate.zg-plate-primary .zg-plate-sub{ color: #5b6274; }
 }
 
 
-/* ========== CALENDARIO ========== */
+/* ========== CALENDARIO (pantalla 4a) ==========
+   Cubre FullCalendar v3/v4 (.fc-day-header, .fc-day-grid-event) y
+   v5/v6 (.fc-col-header-cell, .fc-daygrid-*). La grilla y los datos
+   siguen siendo del bundle; acá solo se reestila. */
 
-#calendar .fc-toolbar-title,
-.zg-cal-title{
-  font-family:'Rajdhani','Inter',sans-serif !important;
+/* encabezado: mes grande + año apagado */
+.zg-cal-period{ display:flex; align-items:flex-end; gap:1rem; }
+.zg-cal-month{ margin:0; }
+.zg-cal-year{
+  font-family:'Rajdhani','Inter',sans-serif;
+  font-size:2.5rem;
   font-weight:700;
-  text-transform:uppercase;
-  letter-spacing:.03em;
+  line-height:1;
+  color: var(--zg-text-dim);
+  padding-bottom:.3rem;
 }
-#calendar .fc-col-header-cell-cushion{
+.zg-cal-nav{ display:flex; align-items:center; gap:.5rem; }
+.zg-cal-arrow{
+  width:38px; height:38px;
+  display:inline-flex; align-items:center; justify-content:center;
+  background:transparent;
+  border:1px solid var(--zg-border);
+  border-radius:6px;
+  color: var(--zg-text);
+}
+.zg-cal-arrow:hover{ border-color: var(--zg-accent); color: var(--zg-text); }
+.zg-cal-today{
+  background: var(--zg-surface-2);
+  border:1px solid var(--zg-border);
+  border-radius:6px;
+  color: var(--zg-text);
+  font-size:.72rem;
+  font-weight:800;
+  letter-spacing:.09em;
+  text-transform:uppercase;
+  padding:.62rem 1rem;
+}
+.zg-cal-today:hover{ border-color: var(--zg-accent); }
+.zg-cal-arrow:active, .zg-cal-today:active{ transform: translateY(1px); }
+
+/* la barra nativa se oculta: la reemplaza el encabezado de arriba */
+#calendar .fc-toolbar,
+#calendar .fc-header-toolbar,
+#calendar .fc-toolbar.fc-header-toolbar{ display:none !important; }
+
+.zg-cal{
+  border:1px solid var(--zg-border);
+  border-radius:12px;
+  overflow:hidden;
+  background: var(--zg-surface);
+}
+
+/* días de la semana */
+#calendar .fc-col-header-cell,
+#calendar th.fc-day-header{
+  background: var(--zg-surface-2) !important;
+  padding:.6rem 0 !important;
+}
+#calendar .fc-col-header-cell-cushion,
+#calendar th.fc-day-header{
+  font-family:'Inter',sans-serif;
   font-size:.62rem;
   font-weight:800;
   letter-spacing:.1em;
   text-transform:uppercase;
-  color: var(--zg-text-dim);
+  color: var(--zg-text-dim) !important;
+  text-decoration:none;
 }
-#calendar .fc-daygrid-day{ background: var(--zg-surface); }
-#calendar .fc-day-other{ background: var(--zg-bg); }
-#calendar .fc-day-today{ background: var(--zg-surface-2) !important; box-shadow: inset 0 0 0 2px var(--zg-accent); }
-#calendar .fc-daygrid-day-number{ font-family:'Rajdhani','Inter',sans-serif; font-size:.78rem; color: var(--zg-text-dim); }
-#calendar .fc-event, #calendar .fc-daygrid-event{
+
+/* celdas */
+#calendar .fc-daygrid-day,
+#calendar td.fc-day{ background: var(--zg-surface); }
+#calendar .fc-day-other,
+#calendar td.fc-other-month{ background: var(--zg-bg); opacity:1; }
+#calendar .fc-daygrid-day-frame,
+#calendar .fc-day-grid .fc-row{ min-height:112px; }
+#calendar .fc-daygrid-day-number,
+#calendar .fc-day-number{
+  font-family:'JetBrains Mono',ui-monospace,monospace;
+  font-size:.7rem;
+  color: var(--zg-text-dim);
+  opacity:1;
+  padding:.5rem .55rem !important;
+  text-decoration:none;
+}
+#calendar .fc-day-today,
+#calendar td.fc-today{
+  background: var(--zg-surface-2) !important;
+  box-shadow: inset 0 0 0 2px var(--zg-accent);
+}
+#calendar .fc-day-today .fc-daygrid-day-number,
+#calendar td.fc-today .fc-day-number{ color: var(--zg-text); font-weight:700; }
+
+/* eventos: chapa con filo de color */
+#calendar .fc-event,
+#calendar .fc-daygrid-event,
+#calendar a.fc-day-grid-event{
   background: var(--zg-accent-glow) !important;
-  border: none !important;
-  border-left: 3px solid var(--zg-accent) !important;
-  border-radius: 4px !important;
+  border:none !important;
+  border-left:3px solid var(--zg-accent) !important;
+  border-radius:4px !important;
   color: var(--zg-text) !important;
   font-size:.7rem;
   font-weight:700;
-  padding:.3rem .45rem;
+  line-height:1.3;
+  padding:.35rem .5rem !important;
+  margin:0 .35rem .35rem !important;
+  white-space:normal;
+  box-shadow:none !important;
 }
+#calendar .fc-event:hover{ border-left-color: var(--zg-accent-hover) !important; }
+#calendar .fc-event-time{
+  font-family:'JetBrains Mono',ui-monospace,monospace;
+  font-weight:700;
+  opacity:1;
+  margin-right:.3rem;
+}
+#calendar .fc-event-title{ font-weight:700; }
+#calendar .fc-daygrid-event-dot{ display:none !important; }
+
+/* clases que pone zonegan-calendar-1b.js según el tipo de evento */
+#calendar .fc-event.zg-ev-practice{
+  background: var(--zg-surface-2) !important;
+  border-left-color: var(--zg-text-dim) !important;
+  color: var(--zg-text) !important;
+}
+#calendar .fc-event.zg-ev-loop{
+  background: var(--zg-surface-2) !important;
+  border-left-color: var(--zg-live, #2bd97c) !important;
+}
+
 #calendar table, #calendar td, #calendar th{ border-color: var(--zg-border) !important; }
+#calendar .fc-scrollgrid, #calendar .fc-scrollgrid-section > *{ border-color: var(--zg-border) !important; }
+
+/* leyenda */
+.zg-cal-legend{
+  display:flex;
+  flex-wrap:wrap;
+  gap:1.25rem;
+  margin:1.1rem 0 2rem;
+  font-size:.72rem;
+  color: var(--zg-text-dim);
+}
+.zg-cal-legend > span{ display:flex; align-items:center; gap:.45rem; }
+.zg-cal-key{ width:10px; height:10px; border-radius:2px; display:inline-block; }
+.zg-cal-key-champ{ background: var(--zg-accent); }
+.zg-cal-key-practice{ background: var(--zg-text-dim); }
+.zg-cal-key-loop{ background: var(--zg-live, #2bd97c); }
 
 
 /* ========== BOTONES DEL AFICHE ========== */
