@@ -153,7 +153,10 @@
             var txt = ev.textContent || "";
             if (NO_EVENTS.test(txt)) {
                 var holder = ev.closest(".fc-daygrid-event-harness") || ev.closest(".fc-daygrid-day-events") || ev;
-                holder.style.display = "none";
+                /* FullCalendar v3/v4 recalcula su propio layout de eventos y
+                   pisa cualquier style.display inline que le pongamos, así
+                   que se oculta con una clase + CSS !important en su lugar. */
+                holder.classList.add("zg-ev-hidden");
                 continue;
             }
             ev.classList.remove("zg-ev-champ", "zg-ev-practice", "zg-ev-loop");

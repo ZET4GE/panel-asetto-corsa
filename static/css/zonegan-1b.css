@@ -554,6 +554,10 @@ a.card.zg-plate.zg-plate-primary .zg-plate-sub{ color: #5b6274; }
   box-shadow:none !important;
 }
 #calendar .fc-event:hover{ border-left-color: var(--zg-accent-hover) !important; }
+/* aviso sintético "no hay eventos" del backend: FullCalendar v3/v4 resetea
+   su propio style.display inline en cada recálculo de layout, así que se
+   oculta por clase con !important en vez de por JS puro. */
+#calendar .zg-ev-hidden{ display:none !important; }
 #calendar .fc-event-time{
   font-family:'JetBrains Mono',ui-monospace,monospace;
   font-weight:700;
